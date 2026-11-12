@@ -2,6 +2,25 @@ import discord
 
 import os
 
+from discord import app_commands
+
+import threading
+
+from Flask import flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "happy"
+
+def run_web():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
+threading.Thread(target=run_web).start()
+client.run(TOKEN)
+
 TOKEN = os.environ["DISCORD_TOKEN"]
 
 intents = discord.Intents.default()
@@ -19,8 +38,6 @@ async def on_message(message):
     
     if message.content == '!test':
         await message.channel.send("テスト")
-
-from discord import app_commands
 
 tree = app_commands.CommandTree(client)
 

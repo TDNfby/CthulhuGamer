@@ -20,4 +20,16 @@ async def on_message(message):
     if message.content == '!test':
         await message.channel.send("テスト")
 
+from discord import app_commands
+
+tree = app_commands.CommandTree(client)
+
+@client.event
+async def on_ready():
+  await tree.sync()
+
+@tree.command(name="hello", description="おはよう世界") 
+async def hello(interaction: discord.Interaction):
+  await interaction.response.send_message("Hello, World!")
+    
 client.run(TOKEN)

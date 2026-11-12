@@ -15,3 +15,5 @@ async def on_message(message):
     
     if message.content == '!test':
         await message.channel.send("テスト")
+
+client.run(TOKEN)

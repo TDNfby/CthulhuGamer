@@ -1,6 +1,8 @@
 import discord
 
-TOKEN = DISCORD_TOKEN
+import os
+
+TOKEN = os.environ["DISCORD_TOKEN"]
 
 client=discord.Client()
 

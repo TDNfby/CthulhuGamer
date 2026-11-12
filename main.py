@@ -45,8 +45,51 @@ tree = app_commands.CommandTree(client)
 async def on_ready():
   await tree.sync()
 
-@tree.command(name="hello", description="おはよう世界") 
-async def hello(interaction: discord.Interaction):
-  await interaction.response.send_message("Hello, World!")
+intents = discord.Intents.default()
+client = discord.Client(intents=intents)
+tree = app_commands.CommandTree(client)
+
+@tree.command(name="ccb", description="技能判定用クトゥルフダイスを振ります")
+
+async def test_command(interaction: discord.Interaction,successvalue:int):
+    # ダイスの出目判定
+    import random
     
+    def dice(value):
+        number=random.randint(1,100)
+        if number<=value/5:
+            colorset=1
+            if number<=5:
+                return "成功/決定的成功(クリティカル)/スペシャル"
+            else:
+                return "成功/スペシャル"
+        else:
+            if number<=value:
+                colorset=1
+                if number<=5:
+                    return "成功/決定的成功(クリティカル)"
+                else:
+                    return "成功"
+            else:
+                coloset=0
+                if number>=96:
+                    return "失敗/致命的失敗(ファンブル)"
+                else:
+                    return "失敗"
+    log=dice(successvalue)
+    
+    # 失敗か成功かで埋め込みメッセージの色を変える
+    if colorset=1:
+        # 埋め込みメッセージとして送信
+        embed = discord.Embed(
+            title=log,
+            description="**1D100<=successvalue** —> number",
+            color=e60628
+        )
+    else:
+        embed = discord.Embed(
+            title=log,
+            description="**1D100<=successvalue** —> number",
+            color=3773FF
+
 client.run(TOKEN)

@@ -1,0 +1,2 @@
+# CthulhuGamer
+Discord bot

@@ -1,3 +1,7 @@
+import discord
+
+TOKEN = DISCORD_TOKEN
+
 client=discord.Client()
 
 @client.event

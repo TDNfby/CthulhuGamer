@@ -247,6 +247,7 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
     )
     embed.set_footer(text=ability or "")
     await interaction.user.send(embed=embed)
+    await interaction.response.send_message("🎲シークレットダイス")
 
 # /s_resb
 @tree.command(name="s_resb", description="対抗ロール用シークレットクトゥルフダイスを振ります")
@@ -295,6 +296,7 @@ async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.
     )
     embed.set_footer(text=ability or "")
     await interaction.user.send(embed=embed)
+    await interaction.response.send_message("🎲シークレットダイス")
 
 # /s_cbrb
 @tree.command(name="s_cbrb", description="組み合わせロール用シークレットクトゥルフダイスを振ります")
@@ -347,6 +349,7 @@ async def resb_command(interaction: discord.Interaction,successvalue1:app_comman
     )
     embed.set_footer(text=f"{ability1},{ability2}" or "")
     await interaction.user.send(embed=embed)
+    await interaction.response.send_message("🎲シークレットダイス")
 
 # /s_dice
 @tree.command(name="s_dice", description="シークレットダイスを振ります")
@@ -376,5 +379,6 @@ async def resb_command(interaction: discord.Interaction,amount:app_commands.Rang
         icon_url=interaction.user.display_avatar.url
     )
     await interaction.user.send(embed=embed)
+    await interaction.response.send_message("🎲シークレットダイス")
 
 client.run(TOKEN)

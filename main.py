@@ -195,11 +195,18 @@ async def resb_command(interaction: discord.Interaction,amount:app_commands.Rang
     num_list=[]
     for i in range(amount+1):
         num_list.append(random.randint(1,amount))
-
+    
+    # 正誤がないので色は統一
     number=sum(num_list)
     embed = discord.Embed(
         description=f"**{amount}D{sides}**\n ->{number}",
         color=0xbef604
     )
+    embed.set_author(
+        name=interaction.user.display_name,
+        icon_url=interaction.user.display_avatar.url
+    )
+    embed.set_footer(text=f"{ability1},{ability2}" or "")
+    await interaction.response.send_message(embed=embed)
 
 client.run(TOKEN)

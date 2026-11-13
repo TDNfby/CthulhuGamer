@@ -200,7 +200,7 @@ async def resb_command(interaction: discord.Interaction,amount:app_commands.Rang
     number=sum(num_list)
     
     # 表示時複数の結果を表示するか単独の結果かの判定
-    if len(num_list)=1:
+    if len(num_list)==1:
         embed = discord.Embed(
             description=f"**{amount}D{sides}**\n ->{number}",
             color=0xbef604

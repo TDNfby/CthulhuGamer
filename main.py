@@ -161,22 +161,22 @@ async def resb_command(interaction: discord.Interaction,successvalue1:app_comman
             else:
                 log2="**失敗**"
     
-    # logがどの技能のものなのかを示す変数を作る
+    # logがどの技能のものなのかを示す
     ability_log1=f"{log}({ability1})" or log
-    ability_log2=f"{log}({ability2})" or log
+    ability_log2=f"{log2}({ability2})" or log2
     
     # successvalue1が成功か失敗かで埋め込みメッセージの色を変える
     if colorset == 1:
         # successvalue1が成功
         embed = discord.Embed(
-            title=f"{ability_log1},{ability_log2}"
+            title=f"{ability_log1},{ability_log2}",
             description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
             color=0x3773FF
         )
     else:
         # successvalue2が失敗
         embed = discord.Embed(
-            title=f"{ability_log1},{ability_log2}"
+            title=f"{ability_log1},{ability_log2}",
             description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
             color=0xe60628
         )

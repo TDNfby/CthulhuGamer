@@ -62,7 +62,36 @@ async def on_message(message):
         await message.channel.send("テスト")
 
 # /ccb
-i
+@tree.command(name="s ccb", description="技能判定用シークレットクトゥルフダイスを振ります")
+
+async def ccb_command(interaction: discord.Interaction,successvalue:app_commands.Range[int, 1, None],ability:str=None):
+    # DM用のuserIDの取得
+    user = client.get_user(intaraction.user)
+    
+    # ダイスの出目判定
+    log,number,colorset=d(successvalue)
+    
+    # 失敗か成功かで埋め込みメッセージの色を変える
+    if colorset == 1:
+        # 成功
+        embed = discord.Embed(
+            title=log,
+            description=f"**1D100<={successvalue}**\n ->{number}",
+            color=0x3773FF
+        )
+    else:
+        # 失敗
+        embed = discord.Embed(
+            title=log,
+            description=f"**1D100<={successvalue}**\n ->{number}",
+            color=0xe60628
+        )
+    embed.set_author(
+        name=interaction.user.display_name,
+        icon_url=interaction.user.display_avatar.url
+    )
+    embed.set_footer(text=ability or "")
+    await interaction.response.send_message(embed=embed)
 
 # /resb
 @tree.command(name="resb", description="対抗ロール用クトゥルフダイスを振ります")

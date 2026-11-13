@@ -47,35 +47,35 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
         if number<=value/5:
             colorset=1
             if number<=5:
-                return "成功/決定的成功/スペシャル",number,colorset
+                return "**成功/決定的成功/スペシャル**",number,colorset
             else:
-                return "成功/スペシャル",number,colorset
+                return "**成功/スペシャル**",number,colorset
         else:
             if number<=value:
                 colorset=1
                 if number<=5:
-                    return "成功/決定的成功",number,colorset
+                    return "**成功/決定的成功**",number,colorset
                 else:
-                    return "成功",number,colorset
+                    return "**成功**",number,colorset
             else:
                 colorset=0
                 if number>=96:
-                    return "失敗/致命的失敗",number,colorset
+                    return "**失敗/致命的失敗**",number,colorset
                 else:
-                    return "失敗",number,colorset
+                    return "**失敗**",number,colorset
     log,number,colorset=dice(successvalue)
     
     # 失敗か成功かで埋め込みメッセージの色を変える
     if colorset == 1:
         # 埋め込みメッセージとして送信
         embed = discord.Embed(
-            title=f"**{log}**",
-            description="**1D100<={successvalue}** —> {number}",
+            title=log,
+            description=f"**1D100<={successvalue}** —> {number}",
             color=0x3773FF
         )
     else:
         embed = discord.Embed(
-            title=f"**{log}"**",
+            title=log,
             description=f"**1D100<={successvalue}** —> {number}",
             color=0xe60628
         )

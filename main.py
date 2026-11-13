@@ -50,14 +50,14 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
             if number<=5:
                 return "成功/決定的成功(クリティカル)/スペシャル",number,colorset
             else:
-                return "成功/スペシャル"
+                return "成功/スペシャル",number,colorset
         else:
             if number<=value:
                 colorset=1
                 if number<=5:
                     return "成功/決定的成功(クリティカル)",number,colorset
                 else:
-                    return "成功"
+                    return "成功",number,colorset
             else:
                 colorset=0
                 if number>=96:

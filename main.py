@@ -48,7 +48,7 @@ tree = app_commands.CommandTree(client)
 
 @tree.command(name="ccb", description="技能判定用クトゥルフダイスを振ります")
 
-async def ccb_command(interaction: discord.Interaction,app_commands.Range[int, 1, None],ability:text＝None):
+async def ccb_command(interaction: discord.Interaction,app_commands.Range[int, 1, None],ability:text=None):
     # ダイスの出目判定
     import random
     

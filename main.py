@@ -26,6 +26,7 @@ client.run(TOKEN)
 @client.event
 async def on_ready():
     print('ログインしました')
+    await tree.sync()
 
 @client.event
 async def on_message(message):
@@ -35,14 +36,6 @@ async def on_message(message):
     if message.content == '!test':
         await message.channel.send("テスト")
 
-tree = app_commands.CommandTree(client)
-
-@client.event
-async def on_ready():
-  await tree.sync()
-
-intents = discord.Intents.default()
-client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
 @tree.command(name="ccb", description="技能判定用クトゥルフダイスを振ります")

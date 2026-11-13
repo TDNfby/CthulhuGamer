@@ -62,33 +62,7 @@ async def on_message(message):
         await message.channel.send("テスト")
 
 # /ccb
-@tree.command(name="ccb", description="技能判定用クトゥルフダイスを振ります")
-
-async def ccb_command(interaction: discord.Interaction,successvalue:app_commands.Range[int, 1, None],ability:str=None):
-    # ダイスの出目判定
-    log,number,colorset=d(successvalue)
-    
-    # 失敗か成功かで埋め込みメッセージの色を変える
-    if colorset == 1:
-        # 成功
-        embed = discord.Embed(
-            title=log,
-            description=f"**1D100<={successvalue}**\n ->{number}",
-            color=0x3773FF
-        )
-    else:
-        # 失敗
-        embed = discord.Embed(
-            title=log,
-            description=f"**1D100<={successvalue}**\n ->{number}",
-            color=0xe60628
-        )
-    embed.set_author(
-        name=interaction.user.display_name,
-        icon_url=interaction.user.display_avatar.url
-    )
-    embed.set_footer(text=ability or "")
-    await interaction.response.send_message(embed=embed)
+i
 
 # /resb
 @tree.command(name="resb", description="対抗ロール用クトゥルフダイスを振ります")
@@ -215,5 +189,173 @@ async def resb_command(interaction: discord.Interaction,amount:app_commands.Rang
         icon_url=interaction.user.display_avatar.url
     )
     await interaction.response.send_message(embed=embed)
+
+# シークレットダイス
+# /s ccb
+@tree.command(name="s ccb", description="技能判定用シークレットクトゥルフダイスを振ります")
+
+async def ccb_command(interaction: discord.Interaction,successvalue:app_commands.Range[int, 1, None],ability:str=None):
+    # DM用のuserIDの取得
+    user = client.get_user(intaraction.user)
+    
+    # ダイスの出目判定
+    log,number,colorset=d(successvalue)
+    
+    # 失敗か成功かで埋め込みメッセージの色を変える
+    if colorset == 1:
+        # 成功
+        embed = discord.Embed(
+            title=log,
+            description=f"**1D100<={successvalue}**\n ->{number}",
+            color=0x3773FF
+        )
+    else:
+        # 失敗
+        embed = discord.Embed(
+            title=log,
+            description=f"**1D100<={successvalue}**\n ->{number}",
+            color=0xe60628
+        )
+    embed.set_author(
+        name=interaction.user.display_name,
+        icon_url=interaction.user.display_avatar.url
+    )
+    embed.set_footer(text=ability or "")
+    await user.send(embed=embed)
+
+# /s resb
+@tree.command(name="s resb", description="対抗ロール用シークレットクトゥルフダイスを振ります")
+
+async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.Range[int, 1, None],enemystatus:app_commands.Range[int,1,None],ability:str=None):
+    # DM用のuserIDの取得
+    user = client.get_user(intaraction.user)
+    
+    # ダイスの出目判定
+    successvalue=50+(yourstatus-enemystatus)*5
+    
+    if successvalue>=100:
+        # 自動成功
+        embed = discord.Embed(
+            title="自動成功",
+            description=f"**resb({yourstatus}-{enemystatus})**\n ->自動成功",
+            color=0x3773FF
+            )
+    else:
+            if successvalue<=0:
+                # 自動失敗
+                embed = discord.Embed(
+                title="自動失敗",
+                description=f"**resb({yourstatus}-{enemystatus})**\n ->自動失敗",
+                color=0xe60628
+                )
+            else:
+                log,number,colorset=d(successvalue)
+    
+                # 失敗か成功かで埋め込みメッセージの色を変える
+                if colorset == 1:
+                    # 成功
+                    embed = discord.Embed(
+                        title=log,
+                        description=f"**resb({yourstatus}-{enemystatus})**\n\n**1D100<={successvalue}**\n ->{number}",
+                        color=0x3773FF
+                    )
+                else:
+                    # 失敗
+                    embed = discord.Embed(
+                        title=log,
+                        description=f"**resb({yourstatus}-{enemystatus})**\n\n**1D100<={successvalue}**\n ->{number}",
+                        color=0xe60628
+                    )
+    embed.set_author(
+        name=interaction.user.display_name,
+        icon_url=interaction.user.display_avatar.url
+    )
+    embed.set_footer(text=ability or "")
+    await user.send(embed=embed)
+
+# /s cbrb
+@tree.command(name="s cbrb", description="組み合わせロール用シークレットクトゥルフダイスを振ります")
+
+async def resb_command(interaction: discord.Interaction,successvalue1:app_commands.Range[int, 1, None],successvalue2:app_commands.Range[int,1,None],ability1:str=None,ability2:str=None):
+    # DM用のuserIDの取得
+    user = client.get_user(intaraction.user)
+    
+    # ダイスの出目判定
+    log,number,colorset=d(successvalue1)
+    
+    # 出目と色判定はsuccessvalue1のまま、判定結果だけをsuccessvalue2で判定し、log2に保存する
+    if number<=successvalue2/5:
+        if number<=5:
+            log2="**成功/決定的成功/スペシャル**"
+        else:
+            log2="**成功/スペシャル**"
+    else:
+        if number<=successvalue2:
+            if number<=5:
+                log2="**成功/決定的成功**"
+            else:
+                log2="**成功**"
+        else:
+            if number>=96:
+                log2="**失敗/致命的失敗**"
+            else:
+                log2="**失敗**"
+    
+    # logがどの技能のものなのかを示す
+    ability_log1=f"{log}({ability1})" or log
+    ability_log2=f"{log2}({ability2})" or log2
+    
+    # successvalue1が成功か失敗かで埋め込みメッセージの色を変える
+    if colorset == 1:
+        # successvalue1が成功
+        embed = discord.Embed(
+            title=f"{ability_log1},{ability_log2}",
+            description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
+            color=0x3773FF
+        )
+    else:
+        # successvalue2が失敗
+        embed = discord.Embed(
+            title=f"{ability_log1},{ability_log2}",
+            description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
+            color=0xe60628
+        )
+    embed.set_author(
+        name=interaction.user.display_name,
+        icon_url=interaction.user.display_avatar.url
+    )
+    embed.set_footer(text=f"{ability1},{ability2}" or "")
+    await user.send(embed=embed)
+
+# /s dice
+@tree.command(name="dice", description="ダイスを振ります")
+
+async def resb_command(interaction: discord.Interaction,amount:app_commands.Range[int, 1, None],sides:app_commands.Range[int,1,None]):
+    # DM用のuserIDの取得
+    user = client.get_user(intaraction.user)
+    
+    num_list=[]
+    for i in range(amount):
+        num_list.append(random.randint(1,sides))
+    
+    # 正誤がないので色は統一
+    number=sum(num_list)
+    
+    # 表示時複数の結果を表示するか単独の結果かの判定
+    if len(num_list)==1:
+        embed = discord.Embed(
+            description=f"**{amount}D{sides}**\n ->{number}",
+            color=0xbef604
+        )
+    else:
+        embed = discord.Embed(
+            description=f"**{amount}D{sides}**\n ->{num_list}\n ->{number}",
+            color=0xbef604
+        )
+    embed.set_author(
+        name=interaction.user.display_name,
+        icon_url=interaction.user.display_avatar.url
+    )
+    await user.send(embed=embed)
 
 client.run(TOKEN)

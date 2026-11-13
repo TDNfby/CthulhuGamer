@@ -83,6 +83,6 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
         name=interaction.user.display_name,
         icon_url=interaction.user.display_name
     )
-    embed.set_footer(text=ability)
+    embed.set_footer(text=ability or "")
     await interaction.response.send_message(embed=embed)
 client.run(TOKEN)

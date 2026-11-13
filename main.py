@@ -194,14 +194,22 @@ async def resb_command(interaction: discord.Interaction,successvalue1:app_comman
 async def resb_command(interaction: discord.Interaction,amount:app_commands.Range[int, 1, None],sides:app_commands.Range[int,1,None]):
     num_list=[]
     for i in range(amount+1):
-        num_list.append(random.randint(1,amount))
+        num_list.append(random.randint(1,sides))
     
     # 正誤がないので色は統一
     number=sum(num_list)
-    embed = discord.Embed(
-        description=f"**{amount}D{sides}**\n ->{number}",
-        color=0xbef604
-    )
+    
+    # 表示時複数の結果を表示するか単独の結果かの判定
+    if len(num_list)=1:
+        embed = discord.Embed(
+            description=f"**{amount}D{sides}**\n ->{number}",
+            color=0xbef604
+        )
+    else:
+        embed = discord.Embed(
+            description=f"**{amount}D{sides}**\n ->{num_list}\n ->{number}",
+            color=0xbef604
+        )
     embed.set_author(
         name=interaction.user.display_name,
         icon_url=interaction.user.display_avatar.url

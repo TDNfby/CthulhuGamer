@@ -29,6 +29,7 @@ async def on_ready():
     print('ログインしました')
     await tree.sync()
 
+#正誤判定の関数
 def d(value):
     number=random.randint(1,100)
     if number<=value/5:
@@ -186,5 +187,19 @@ async def resb_command(interaction: discord.Interaction,successvalue1:app_comman
     )
     embed.set_footer(text=f"{ability1},{ability2}" or "")
     await interaction.response.send_message(embed=embed)
+
+# /dice
+@tree.command(name="dice", description="ダイスを振ります")
+
+async def resb_command(interaction: discord.Interaction,amount:app_commands.Range[int, 1, None],sides:app_commands.Range[int,1,None]):
+    num_list=[]
+    for i in range(amount+1):
+        num_list.append(random.randint(1,amount))
+
+    number=sum(num_list)
+    embed = discord.Embed(
+        description=f"**{amount}D{sides}**\n ->{number}",
+        color=0xbef604
+    )
 
 client.run(TOKEN)

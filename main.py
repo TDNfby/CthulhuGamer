@@ -81,13 +81,13 @@ async def ccb_command(interaction: discord.Interaction,app_commands.Range[int, 1
         embed = discord.Embed(
             title=log,
             description="**1D100<=successvalue** —> number",
-            color=e60628
+            color=0xe60628
         )
     else:
         embed = discord.Embed(
             title=log,
             description="**1D100<=successvalue** —> number",
-            color=3773FF
+            color=0x3773FF
         )
     embed.set_author(
         name=author.display_name

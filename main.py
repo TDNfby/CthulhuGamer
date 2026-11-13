@@ -62,11 +62,9 @@ async def on_message(message):
         await message.channel.send("テスト")
 
 # /ccb
-@tree.command(name="s ccb", description="技能判定用シークレットクトゥルフダイスを振ります")
+@tree.command(name="ccb", description="技能判定用クトゥルフダイスを振ります")
 
 async def ccb_command(interaction: discord.Interaction,successvalue:app_commands.Range[int, 1, None],ability:str=None):
-    # DM用のuserIDの取得
-    user = client.get_user(intaraction.user)
     
     # ダイスの出目判定
     log,number,colorset=d(successvalue)

@@ -21,6 +21,7 @@ TOKEN = os.environ["DISCORD_TOKEN"]
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
+tree = app_commands.CommandTree(client)
 
 @client.event
 async def on_ready():
@@ -34,8 +35,6 @@ async def on_message(message):
     
     if message.content == '!test':
         await message.channel.send("テスト")
-
-tree = app_commands.CommandTree(client)
 
 @tree.command(name="ccb", description="技能判定用クトゥルフダイスを振ります")
 

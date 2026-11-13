@@ -3,7 +3,7 @@ import os
 from discord import app_commands
 from discord.ext import commands
 import threading
-from Flask import flask
+from flask import Flask
 
 app = Flask(__name__)
 

@@ -90,7 +90,7 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
             color=0x3773FF
         )
     embed.set_author(
-        name=author.display_name
+        name=author.display_name,
         icon_url=author.display_name
     )
     embed.set_footer(text=ability)

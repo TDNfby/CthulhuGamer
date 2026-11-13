@@ -81,7 +81,7 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
         )
     embed.set_author(
         name=interaction.user.display_name,
-        icon_url=interaction.user.display_name
+        icon_url=interaction.user.display_avatar.url
     )
     embed.set_footer(text=ability or "")
     await interaction.response.send_message(embed=embed)

@@ -220,12 +220,10 @@ async def resb_command(interaction: discord.Interaction,amount:app_commands.Rang
     await interaction.response.send_message(embed=embed)
 
 # シークレットダイス
-# /s ccb
-@tree.command(name="s ccb", description="技能判定用シークレットクトゥルフダイスを振ります")
+# /s_ccb
+@tree.command(name="s_ccb", description="技能判定用シークレットクトゥルフダイスを振ります")
 
 async def ccb_command(interaction: discord.Interaction,successvalue:app_commands.Range[int, 1, None],ability:str=None):
-    # DM用のuserIDの取得
-    user = client.get_user(intaraction.user)
     
     # ダイスの出目判定
     log,number,colorset=d(successvalue)
@@ -250,14 +248,12 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
         icon_url=interaction.user.display_avatar.url
     )
     embed.set_footer(text=ability or "")
-    await user.send(embed=embed)
+    await interaction.user.send(embed=embed)
 
-# /s resb
-@tree.command(name="s resb", description="対抗ロール用シークレットクトゥルフダイスを振ります")
+# /s_resb
+@tree.command(name="s_resb", description="対抗ロール用シークレットクトゥルフダイスを振ります")
 
 async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.Range[int, 1, None],enemystatus:app_commands.Range[int,1,None],ability:str=None):
-    # DM用のuserIDの取得
-    user = client.get_user(intaraction.user)
     
     # ダイスの出目判定
     successvalue=50+(yourstatus-enemystatus)*5
@@ -300,14 +296,12 @@ async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.
         icon_url=interaction.user.display_avatar.url
     )
     embed.set_footer(text=ability or "")
-    await user.send(embed=embed)
+    await interaction.user.send(embed=embed)
 
-# /s cbrb
-@tree.command(name="s cbrb", description="組み合わせロール用シークレットクトゥルフダイスを振ります")
+# /s_cbrb
+@tree.command(name="s_cbrb", description="組み合わせロール用シークレットクトゥルフダイスを振ります")
 
 async def resb_command(interaction: discord.Interaction,successvalue1:app_commands.Range[int, 1, None],successvalue2:app_commands.Range[int,1,None],ability1:str=None,ability2:str=None):
-    # DM用のuserIDの取得
-    user = client.get_user(intaraction.user)
     
     # ダイスの出目判定
     log,number,colorset=d(successvalue1)
@@ -354,14 +348,12 @@ async def resb_command(interaction: discord.Interaction,successvalue1:app_comman
         icon_url=interaction.user.display_avatar.url
     )
     embed.set_footer(text=f"{ability1},{ability2}" or "")
-    await user.send(embed=embed)
+    await interaction.user.send(embed=embed)
 
-# /s dice
-@tree.command(name="dice", description="ダイスを振ります")
+# /s_dice
+@tree.command(name="s_dice", description="シークレットダイスを振ります")
 
 async def resb_command(interaction: discord.Interaction,amount:app_commands.Range[int, 1, None],sides:app_commands.Range[int,1,None]):
-    # DM用のuserIDの取得
-    user = client.get_user(intaraction.user)
     
     num_list=[]
     for i in range(amount):
@@ -385,6 +377,6 @@ async def resb_command(interaction: discord.Interaction,amount:app_commands.Rang
         name=interaction.user.display_name,
         icon_url=interaction.user.display_avatar.url
     )
-    await user.send(embed=embed)
+    await interaction.user.send(embed=embed)
 
 client.run(TOKEN)

@@ -21,7 +21,6 @@ TOKEN = os.environ["DISCORD_TOKEN"]
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
-client.run(TOKEN)
 
 @client.event
 async def on_ready():

@@ -1,11 +1,8 @@
 import discord
-
 import os
-
 from discord import app_commands
-
+from discord.ext import commands
 import threading
-
 from Flask import flask
 
 app = Flask(__name__)
@@ -51,7 +48,7 @@ tree = app_commands.CommandTree(client)
 
 @tree.command(name="ccb", description="技能判定用クトゥルフダイスを振ります")
 
-async def test_command(interaction: discord.Interaction,successvalue:int):
+async def ccb_command(interaction: discord.Interaction,app_commands.Range[int, 1, None],ability:text＝None):
     # ダイスの出目判定
     import random
     
@@ -91,5 +88,11 @@ async def test_command(interaction: discord.Interaction,successvalue:int):
             title=log,
             description="**1D100<=successvalue** —> number",
             color=3773FF
+        )
+    embed.set_author(
+        name=author.display_name
+        icon_url=author.display_name
+    )
+    embed.set_footer(text=ability)
 
 client.run(TOKEN)

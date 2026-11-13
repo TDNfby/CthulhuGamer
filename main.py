@@ -193,7 +193,7 @@ async def resb_command(interaction: discord.Interaction,successvalue1:app_comman
 
 async def resb_command(interaction: discord.Interaction,amount:app_commands.Range[int, 1, None],sides:app_commands.Range[int,1,None]):
     num_list=[]
-    for i in range(amount+1):
+    for i in range(amount):
         num_list.append(random.randint(1,sides))
     
     # 正誤がないので色は統一

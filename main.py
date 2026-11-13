@@ -4,6 +4,7 @@ from discord import app_commands
 from discord.ext import commands
 import threading
 from flask import Flask
+import random
 
 app = Flask(__name__)
 
@@ -28,23 +29,8 @@ async def on_ready():
     print('ログインしました')
     await tree.sync()
 
-@client.event
-async def on_message(message):
-    if message.author.bot:
-        return
-    
-    if message.content == '!test':
-        await message.channel.send("テスト")
-
-# /ccb
-@tree.command(name="ccb", description="技能判定用クトゥルフダイスを振ります")
-
-async def ccb_command(interaction: discord.Interaction,successvalue:app_commands.Range[int, 1, None],ability:str=None):
-    # ダイスの出目判定
-    import random
-    
-    def dice(value):
-        number=random.randint(1,100)
+def dice(value):
+    number=random.randint(1,100)
         if number<=value/5:
             colorset=1
             if number<=5:
@@ -64,6 +50,21 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
                     return "**失敗/致命的失敗**",number,colorset
                 else:
                     return "**失敗**",number,colorset
+
+
+@client.event
+async def on_message(message):
+    if message.author.bot:
+        return
+    
+    if message.content == '!test':
+        await message.channel.send("テスト")
+
+# /ccb
+@tree.command(name="ccb", description="技能判定用クトゥルフダイスを振ります")
+
+async def ccb_command(interaction: discord.Interaction,successvalue:app_commands.Range[int, 1, None],ability:str=None):
+    # ダイスの出目判定
     log,number,colorset=dice(successvalue)
     
     # 失敗か成功かで埋め込みメッセージの色を変える
@@ -111,29 +112,6 @@ async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.
                 color=0xe60628
                 )
             else:
-                import random
-    
-                def dice(value):
-                    number=random.randint(1,100)
-                    if number<=value/5:
-                        colorset=1
-                        if number<=5:
-                            return "**成功/決定的成功/スペシャル**",number,colorset
-                        else:
-                            return "**成功/スペシャル**",number,colorset
-                    else:
-                        if number<=value:
-                            colorset=1
-                            if number<=5:
-                                return "**成功/決定的成功**",number,colorset
-                            else:
-                                return "**成功**",number,colorset
-                        else:
-                            colorset=0
-                            if number>=96:
-                                return "**失敗/致命的失敗**",number,colorset
-                            else:
-                                return "**失敗**",number,colorset
                 log,number,colorset=dice(successvalue)
     
                 # 失敗か成功かで埋め込みメッセージの色を変える

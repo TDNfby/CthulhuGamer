@@ -99,7 +99,7 @@ async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.
     if successvalue>=100:
         # 自動成功
         embed = discord.Embed(
-            title=自動成功,
+            title="自動成功",
             description=f"**resb({yourstatus}-{enemystatus})**\n ->自動成功",
             color=0x3773FF
             )
@@ -107,7 +107,7 @@ async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.
             if successvalue<=0:
                 # 自動失敗
                 embed = discord.Embed(
-                title=自動失敗,
+                title="自動失敗",
                 description=f"**resb({yourstatus}-{enemystatus})**\n ->自動失敗",
                 color=0xe60628
                 )

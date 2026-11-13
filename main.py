@@ -70,13 +70,13 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
         # 埋め込みメッセージとして送信
         embed = discord.Embed(
             title=log,
-            description=f"**1D100<={successvalue}**/n -> {number}",
+            description=f"**1D100<={successvalue}**\n -> {number}",
             color=0x3773FF
         )
     else:
         embed = discord.Embed(
             title=log,
-            description=f"**1D100<={successvalue}**/n -> {number}",
+            description=f"**1D100<={successvalue}**\n -> {number}",
             color=0xe60628
         )
     embed.set_author(

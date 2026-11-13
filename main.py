@@ -49,23 +49,23 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
         if number<=value/5:
             colorset=1
             if number<=5:
-                return "成功/決定的成功(クリティカル)/スペシャル"
+                return "成功/決定的成功(クリティカル)/スペシャル",number,colorset
             else:
                 return "成功/スペシャル"
         else:
             if number<=value:
                 colorset=1
                 if number<=5:
-                    return "成功/決定的成功(クリティカル)"
+                    return "成功/決定的成功(クリティカル)",number,colorset
                 else:
                     return "成功"
             else:
-                coloset=0
+                colorset=0
                 if number>=96:
-                    return "失敗/致命的失敗(ファンブル)"
+                    return "失敗/致命的失敗(ファンブル)",number,colorset
                 else:
-                    return "失敗"
-    log=dice(successvalue)
+                    return "失敗",number,colorset
+    log,number,colorset=dice(successvalue)
     
     # 失敗か成功かで埋め込みメッセージの色を変える
     if colorset == 1:
@@ -86,5 +86,5 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
         icon_url=author.display_name
     )
     embed.set_footer(text=ability)
-
+    await interaction.response.send_message(embed=embed)
 client.run(TOKEN)

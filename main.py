@@ -169,14 +169,14 @@ async def resb_command(interaction: discord.Interaction,successvalue1:app_comman
     if colorset == 1:
         # successvalue1が成功
         embed = discord.Embed(
-            title=log ability_log1,log2 ability_log2
+            title=f"{log}{ability_log1},{log2}{ability_log2}"
             description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
             color=0x3773FF
         )
     else:
         # successvalue2が失敗
         embed = discord.Embed(
-            title=log ability_log1,log2 ability_log2
+            title=f"{log}{ability_log1},{log2}{ability_log2}"
             description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
             color=0xe60628
         )

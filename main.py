@@ -47,20 +47,20 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
         if number<=value/5:
             colorset=1
             if number<=5:
-                return "成功/決定的成功(クリティカル)/スペシャル",number,colorset
+                return "成功/決定的成功/スペシャル",number,colorset
             else:
                 return "成功/スペシャル",number,colorset
         else:
             if number<=value:
                 colorset=1
                 if number<=5:
-                    return "成功/決定的成功(クリティカル)",number,colorset
+                    return "成功/決定的成功",number,colorset
                 else:
                     return "成功",number,colorset
             else:
                 colorset=0
                 if number>=96:
-                    return "失敗/致命的失敗(ファンブル)",number,colorset
+                    return "失敗/致命的失敗",number,colorset
                 else:
                     return "失敗",number,colorset
     log,number,colorset=dice(successvalue)

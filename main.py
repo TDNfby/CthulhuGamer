@@ -136,4 +136,55 @@ async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.
     embed.set_footer(text=ability or "")
     await interaction.response.send_message(embed=embed)
 
+# /cbrb
+@tree.command(name="cbrb", description="組み合わせロール用クトゥルフダイスを振ります")
+
+async def resb_command(interaction: discord.Interaction,successvalue1:app_commands.Range[int, 1, None],successvalue2:app_commands.Range[int,1,None],ability1:str=None,ability2:str=None):
+    # ダイスの出目判定
+    log,number,colorset=dice(successvalue1)
+    
+    # 出目と色判定はsuccessvalue1のまま、判定結果だけをsuccessvalue2で判定し、log2に保存する
+    if number<=successvalue2/5:
+        if number<=5:
+            log2="**成功/決定的成功/スペシャル**"
+        else:
+            log2="**成功/スペシャル**"
+    else:
+        if number<=successvalue2:
+            if number<=5:
+                log2="**成功/決定的成功**"
+            else:
+                log2="**成功**"
+        else:
+            if number>=96:
+                log2="**失敗/致命的失敗**"
+            else:
+                log2="**失敗**"
+    
+    # logがどの技能のものなのかを示す変数を作る
+    ability_log1=f"({ability1})" or ""
+    ability_log2=f"({ability2})" or ""
+    
+    # successvalue1が成功か失敗かで埋め込みメッセージの色を変える
+    if colorset == 1:
+        # successvalue1が成功
+        embed = discord.Embed(
+            title=log ability_log1,log2 ability_log2
+            description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
+            color=0x3773FF
+        )
+    else:
+        # successvalue2が失敗
+        embed = discord.Embed(
+            title=log ability_log1,log2 ability_log2
+            description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
+            color=0xe60628
+        )
+    embed.set_author(
+        name=interaction.user.display_name,
+        icon_url=interaction.user.display_avatar.url
+    )
+    embed.set_footer(text=ability1,ability2 or "")
+    await interaction.response.send_message(embed=embed)
+
 client.run(TOKEN)

@@ -184,7 +184,7 @@ async def resb_command(interaction: discord.Interaction,successvalue1:app_comman
         name=interaction.user.display_name,
         icon_url=interaction.user.display_avatar.url
     )
-    embed.set_footer(text=ability1,ability2 or "")
+    embed.set_footer(text=f"{ability1},{ability2}" or "")
     await interaction.response.send_message(embed=embed)
 
 client.run(TOKEN)

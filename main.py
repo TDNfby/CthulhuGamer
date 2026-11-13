@@ -76,7 +76,7 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
     log=dice(successvalue)
     
     # 失敗か成功かで埋め込みメッセージの色を変える
-    if colorset=1:
+    if colorset == 1:
         # 埋め込みメッセージとして送信
         embed = discord.Embed(
             title=log,

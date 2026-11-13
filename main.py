@@ -101,7 +101,7 @@ async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.
             title=log,
             description=f"**resb({yourstatus}-{enemystatus})**\n ->自動成功",
             color=0x3773FF
-            
+            )
     else:
             if successvalue<=0:
                 # 自動失敗

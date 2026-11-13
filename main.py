@@ -16,13 +16,12 @@ def run_web():
     app.run(host="0.0.0.0", port=port)
 
 threading.Thread(target=run_web).start()
-client.run(TOKEN)
-
 TOKEN = os.environ["DISCORD_TOKEN"]
 
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
+client.run(TOKEN)
 
 @client.event
 async def on_ready():

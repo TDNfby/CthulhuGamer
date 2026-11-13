@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "happy"
+    return "Hello World!"
 
 def run_web():
     port = int(os.environ.get("PORT", 10000))
@@ -36,6 +36,7 @@ async def on_message(message):
     if message.content == '!test':
         await message.channel.send("テスト")
 
+# /ccb
 @tree.command(name="ccb", description="技能判定用クトゥルフダイスを振ります")
 
 async def ccb_command(interaction: discord.Interaction,successvalue:app_commands.Range[int, 1, None],ability:str=None):
@@ -67,13 +68,14 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
     
     # 失敗か成功かで埋め込みメッセージの色を変える
     if colorset == 1:
-        # 埋め込みメッセージとして送信
+        # 成功
         embed = discord.Embed(
             title=log,
             description=f"**1D100<={successvalue}**\n ->{number}",
             color=0x3773FF
         )
     else:
+        # 失敗
         embed = discord.Embed(
             title=log,
             description=f"**1D100<={successvalue}**\n ->{number}",
@@ -85,4 +87,75 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
     )
     embed.set_footer(text=ability or "")
     await interaction.response.send_message(embed=embed)
+
+# /resb
+@tree.command(name="resb", description="対抗ロール用クトゥルフダイスを振ります")
+
+async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.Range[int, 1, None],enemystatus:app_commands.Range[int,1,None],ability:str=None):
+    # ダイスの出目判定
+    successvalue=50+(yourstatus-enemystatus)*5
+    
+    if successvalue>=100:
+        # 自動成功
+        embed = discord.Embed(
+            title=log,
+            description=f"**resb({yourstatus}-{enemystatus})**\n ->自動成功",
+            color=0x3773FF
+            
+    else:
+            if successvalue<=0:
+                # 自動失敗
+                embed = discord.Embed(
+                title=log,
+                description=f"**resb({yourstatus}-{enemystatus})**\n ->自動失敗",
+                color=0xe60628
+                )
+            else:
+                import random
+    
+                def dice(value):
+                    number=random.randint(1,100)
+                    if number<=value/5:
+                        colorset=1
+                        if number<=5:
+                            return "**成功/決定的成功/スペシャル**",number,colorset
+                        else:
+                            return "**成功/スペシャル**",number,colorset
+                    else:
+                        if number<=value:
+                            colorset=1
+                            if number<=5:
+                                return "**成功/決定的成功**",number,colorset
+                            else:
+                                return "**成功**",number,colorset
+                        else:
+                            colorset=0
+                            if number>=96:
+                                return "**失敗/致命的失敗**",number,colorset
+                            else:
+                                return "**失敗**",number,colorset
+                log,number,colorset=dice(successvalue)
+    
+                # 失敗か成功かで埋め込みメッセージの色を変える
+                if colorset == 1:
+                    # 成功
+                    embed = discord.Embed(
+                        title=log,
+                        description=f"**resb({yourstatus}-{enemystatus})**\n\n**1D100<={successvalue}**\n ->{number}",
+                        color=0x3773FF
+                    )
+                else:
+                    # 失敗
+                    embed = discord.Embed(
+                        title=log,
+                        description=f"**resb({yourstatus}-{enemystatus})**\n\n**1D100<={successvalue}**\n ->{number}",
+                        color=0xe60628
+                    )
+    embed.set_author(
+        name=interaction.user.display_name,
+        icon_url=interaction.user.display_avatar.url
+    )
+    embed.set_footer(text=ability or "")
+    await interaction.response.send_message(embed=embed)
+
 client.run(TOKEN)

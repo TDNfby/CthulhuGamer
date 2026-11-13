@@ -29,7 +29,7 @@ async def on_ready():
     print('ログインしました')
     await tree.sync()
 
-def dice(value):
+def d(value):
     number=random.randint(1,100)
     if number<=value/5:
         colorset=1
@@ -65,7 +65,7 @@ async def on_message(message):
 
 async def ccb_command(interaction: discord.Interaction,successvalue:app_commands.Range[int, 1, None],ability:str=None):
     # ダイスの出目判定
-    log,number,colorset=dice(successvalue)
+    log,number,colorset=d(successvalue)
     
     # 失敗か成功かで埋め込みメッセージの色を変える
     if colorset == 1:
@@ -112,7 +112,7 @@ async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.
                 color=0xe60628
                 )
             else:
-                log,number,colorset=dice(successvalue)
+                log,number,colorset=d(successvalue)
     
                 # 失敗か成功かで埋め込みメッセージの色を変える
                 if colorset == 1:
@@ -141,7 +141,7 @@ async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.
 
 async def resb_command(interaction: discord.Interaction,successvalue1:app_commands.Range[int, 1, None],successvalue2:app_commands.Range[int,1,None],ability1:str=None,ability2:str=None):
     # ダイスの出目判定
-    log,number,colorset=dice(successvalue1)
+    log,number,colorset=d(successvalue1)
     
     # 出目と色判定はsuccessvalue1のまま、判定結果だけをsuccessvalue2で判定し、log2に保存する
     if number<=successvalue2/5:

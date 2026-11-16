@@ -142,7 +142,7 @@ async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.
 # /cbrb
 @tree.command(name="cbrb", description="組み合わせロール用クトゥルフダイスを振ります")
 
-async def resb_command(interaction: discord.Interaction,successvalue1:app_commands.Range[int, 1, None],successvalue2:app_commands.Range[int,1,None],ability1:str=None,ability2:str=None):
+async def cbrb_command(interaction: discord.Interaction,successvalue1:app_commands.Range[int, 1, None],successvalue2:app_commands.Range[int,1,None],ability1:str=None,ability2:str=None):
     # ダイスの出目判定
     log,number,colorset=d(successvalue1)
     
@@ -193,7 +193,7 @@ async def resb_command(interaction: discord.Interaction,successvalue1:app_comman
 # /dice
 @tree.command(name="dice", description="ダイスを振ります")
 
-async def resb_command(interaction: discord.Interaction,amount:app_commands.Range[int, 1, None],sides:app_commands.Range[int,1,None]):
+async def dice_command(interaction: discord.Interaction,amount:app_commands.Range[int, 1, None],sides:app_commands.Range[int,1,None]):
     num_list=[]
     for i in range(amount):
         num_list.append(random.randint(1,sides))
@@ -222,7 +222,7 @@ async def resb_command(interaction: discord.Interaction,amount:app_commands.Rang
 # /s_ccb
 @tree.command(name="s_ccb", description="技能判定用シークレットクトゥルフダイスを振ります")
 
-async def ccb_command(interaction: discord.Interaction,successvalue:app_commands.Range[int, 1, None],ability:str=None):
+async def sccb_command(interaction: discord.Interaction,successvalue:app_commands.Range[int, 1, None],ability:str=None):
     
     # ダイスの出目判定
     log,number,colorset=d(successvalue)
@@ -253,7 +253,7 @@ async def ccb_command(interaction: discord.Interaction,successvalue:app_commands
 # /s_resb
 @tree.command(name="s_resb", description="対抗ロール用シークレットクトゥルフダイスを振ります")
 
-async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.Range[int, 1, None],enemystatus:app_commands.Range[int,1,None],ability:str=None):
+async def sresb_command(interaction: discord.Interaction,yourstatus:app_commands.Range[int, 1, None],enemystatus:app_commands.Range[int,1,None],ability:str=None):
     
     # ダイスの出目判定
     successvalue=50+(yourstatus-enemystatus)*5
@@ -302,7 +302,7 @@ async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.
 # /s_cbrb
 @tree.command(name="s_cbrb", description="組み合わせロール用シークレットクトゥルフダイスを振ります")
 
-async def resb_command(interaction: discord.Interaction,successvalue1:app_commands.Range[int, 1, None],successvalue2:app_commands.Range[int,1,None],ability1:str=None,ability2:str=None):
+async def scbrb_command(interaction: discord.Interaction,successvalue1:app_commands.Range[int, 1, None],successvalue2:app_commands.Range[int,1,None],ability1:str=None,ability2:str=None):
     
     # ダイスの出目判定
     log,number,colorset=d(successvalue1)
@@ -355,7 +355,7 @@ async def resb_command(interaction: discord.Interaction,successvalue1:app_comman
 # /s_dice
 @tree.command(name="s_dice", description="シークレットダイスを振ります")
 
-async def resb_command(interaction: discord.Interaction,amount:app_commands.Range[int, 1, None],sides:app_commands.Range[int,1,None]):
+async def sdice_command(interaction: discord.Interaction,amount:app_commands.Range[int, 1, None],sides:app_commands.Range[int,1,None]):
     
     num_list=[]
     for i in range(amount):
@@ -381,5 +381,7 @@ async def resb_command(interaction: discord.Interaction,amount:app_commands.Rang
     )
     await interaction.user.send(embed=embed)
     await interaction.response.send_message("🎲シークレットダイス")
+
+    
 
 client.run(TOKEN)

@@ -56,6 +56,23 @@ def d(value):
             else:
                 return "**失敗**",number,colorset
 
+# PL毎のステータスやクリティカル数を保存したい
+DATA_FILE = "user_data.json"
+
+
+# データの読み込み関数
+def load_data():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+# データの保存関数
+def save_data(data):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
 @client.event
 async def on_message(message):
     if message.author.bot:

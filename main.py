@@ -22,6 +22,8 @@ TOKEN = os.environ["DISCORD_TOKEN"]
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.reactions=True
+intents.menbers=True
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
@@ -382,6 +384,21 @@ async def sdice_command(interaction: discord.Interaction,amount:app_commands.Ran
     await interaction.user.send(embed=embed)
     await interaction.response.send_message("🎲シークレットダイス")
 
+# /rolepannel
+@tree.command(name="rolepannel", description="PL等を管理するためのロールパネルを作成します(管理者専用)")
+@app_commands.default_permissions(administrator=True)
+async def rolepannel_command(interaction: discord.Interaction,role:discord.Role,role2:discord.Role=None,role3:discord.Role=None,role4:discord.Role=None,role5:discord.Role=None):
+    await interaction.response.send_message(roading)
+    enbed=discord.Embed(
+        discription=f"{role}:🇦\n\n上のリアクションを押すとロールを取得・解除できます。"
+        color=0xbef604
+    )
+    embed.set_footer(text="Reaction Role Panel")
     
+    await interaction.response.send_message(embed=embed)
+    panel_message = await interaction.original_response()
+    
+    try:
+        await panel_message.add_reaction("🇦")
 
 client.run(TOKEN)

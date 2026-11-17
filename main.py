@@ -388,13 +388,13 @@ async def sdice_command(interaction: discord.Interaction,amount:app_commands.Ran
 @app_commands.default_permissions(administrator=True)
 async def rolepannel_command(interaction: discord.Interaction,role:discord.Role,role2:discord.Role=None,role3:discord.Role=None,role4:discord.Role=None,role5:discord.Role=None):
     if role2!="":
-        add_discription=\n<@&{role2.id}>:🇧
+        add_discription="\n<@&{role2.id}>:🇧"
     if role3!="":
-        add_discription={add_discription}\n<@&{role3}>:🇨
+        add_discription="{add_discription}\n<@&{role3}>:🇨"
     if role4!="":
-        add_discription={add_discription}\n<@&{role4}>:🇩
+        add_discription="{add_discription}\n<@&{role4}>:🇩"
     if role5!="":
-        add_discription={add_discription}\n<@&{role5}>:🇪
+        add_discription="{add_discription}\n<@&{role5}>:🇪"
     enbed=discord.Embed(
         discription=f"<@&{role.id}>:🇦{add_discription}\n\nリアクションを押すとロールを取得・解除できます。"
         color=0xbef604

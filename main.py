@@ -7,18 +7,10 @@ from flask import Flask
 import random
 import re
 
-app = Flask(__name__)
-
 @app.route("/")
 def home():
     return "Hello World!"
 
-# Renderのための処理
-def run_web():
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
-
-threading.Thread(target=run_web).start()
 TOKEN = os.environ["DISCORD_TOKEN"]
 
 intents = discord.Intents.default()

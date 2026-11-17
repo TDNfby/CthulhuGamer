@@ -5,6 +5,7 @@ from discord.ext import commands
 import threading
 from flask import Flask
 import random
+import re
 
 app = Flask(__name__)
 
@@ -427,6 +428,58 @@ async def rolepannel_command(
             await panel_message.add_reaction(emoji)
     except discord.HTTPException:
         await interaction.followup.send("エラー: リアクションの付与に失敗しました。", ephemeral=True)
+
+# メッセージからロールIDを取り出す関数
+async def get_role_from_panel(payload: discord.RawReactionActionEvent, guild: discord.Guild):
+    channel = client.get_channel(payload.channel_id) or await client.fetch_channel(payload.channel_id)
+    message = await channel.fetch_message(payload.message_id)
+    
+    # Bot自身のメッセージか、埋め込み(Embed)があるか確認
+    if message.author.id != client.user.id or not message.embeds:
+        return None
+    
+    embed = message.embeds[0]
+    
+    # フッターが「Reaction Role Panel」のパネルだけを対象にする
+    if not embed.footer or embed.footer.text != "Reaction Role Panel":
+        return None
+
+    # 説明文の中から「<@&ロールID>:押された絵文字」の行を探してロールIDを抜き出す
+    pattern = rf"<@&(\d+)>\s*:\s*{re.escape(str(payload.emoji))}"
+    match = re.search(pattern, embed.description or "")
+    
+    if match:
+        role_id = int(match.group(1))
+        return guild.get_role(role_id)
+    return None
+
+# ロール付与処理
+@client.event
+async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
+    if payload.user_id == client.user.id or not payload.guild_id:
+        return
+
+    guild = client.get_guild(payload.guild_id)
+    role = await get_role_from_panel(payload, guild)
+    
+    if role:
+        member = payload.member or await guild.fetch_member(payload.user_id)
+        if member:
+            await member.add_roles(role)
+
+# ロール解除
+@client.event
+async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
+    if payload.user_id == client.user.id or not payload.guild_id:
+        return
+
+    guild = client.get_guild(payload.guild_id)
+    role = await get_role_from_panel(payload, guild)
+    
+    if role:
+        member = guild.get_member(payload.user_id) or await guild.fetch_member(payload.user_id)
+        if member:
+            await member.remove_roles(role)
 
 
 client.run(TOKEN)

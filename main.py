@@ -406,7 +406,7 @@ async def sdice_command(interaction: discord.Interaction,amount:app_commands.Ran
 async def rolepannel_command(interaction: discord.Interaction,role:discord.Role,role2:discord.Role=None,role3:discord.Role=None,role4:discord.Role=None,role5:discord.Role=None):
     await interaction.response.send_message(roading)
     enbed=discord.Embed(
-        discription=f"{role}:🇦\n\n上のリアクションを押すとロールを取得・解除できます。"
+        discription=f"{role}:🇦\n\nリアクションを押すとロールを取得・解除できます。"
         color=0xbef604
     )
     embed.set_footer(text="Reaction Role Panel")

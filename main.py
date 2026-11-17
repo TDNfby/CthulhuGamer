@@ -24,7 +24,7 @@ TOKEN = os.environ["DISCORD_TOKEN"]
 intents = discord.Intents.default()
 intents.message_content = True
 intents.reactions=True
-intents.menbers=True
+intents.members=True
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 

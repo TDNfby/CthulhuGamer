@@ -466,6 +466,7 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
         member = payload.member or await guild.fetch_member(payload.user_id)
         if member:
             await member.add_roles(role)
+            await interaction.user.send(f"{message.gulid.name}でロール:{role}を付与しました。")
 
 # ロール解除
 @client.event
@@ -480,6 +481,7 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
         member = guild.get_member(payload.user_id) or await guild.fetch_member(payload.user_id)
         if member:
             await member.remove_roles(role)
+            await interaction.user.send(f"{message.gulid.name}でロール:{role}を解除しました。")
 
 
 client.run(TOKEN)

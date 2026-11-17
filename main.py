@@ -414,7 +414,7 @@ async def rolepannel_command(
 
     # Embedの作成
     embed = discord.Embed(
-        description=f"<@&{role.id}>:🇦{add_description}\n\nリアクションを押すとロールを取得・解除できます。",
+        description=f"<@&{role.id}>:🇦{add_description}\n\n-# リアクションを押すとロールを取得・解除できます。",
         color=0xbef604
     )
     embed.set_footer(text="Reaction Role Panel")

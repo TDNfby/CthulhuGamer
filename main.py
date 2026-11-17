@@ -56,9 +56,8 @@ def d(value):
             else:
                 return "**失敗**",number,colorset
 
-# PL毎のステータスやクリティカル数を保存したい
+# PL毎のステータスやクリティカル数を保存するdic
 DATA_FILE = "user_data.json"
-
 
 # データの読み込み関数
 def load_data():

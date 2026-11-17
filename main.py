@@ -55,23 +55,6 @@ def d(value):
             else:
                 return "**失敗**",number,colorset
 
-# ロールパネルの関数
-async def grant_role(payload):
-    # 絵文字が異なる場合は処理を打ち切る
-    if payload.emoji.name != emoji_list: 
-        return
-
-    # チャンネルが異なる場合は処理を打ち切る
-    if payload.channel_id != interaction.channel_ID:
-        return
-
-    # Member オブジェクトと Role オブジェクトを取得して役職を付与
-    member = payload.member
-    role = guild.get_role(role_list)
-    await member.add_roles(role)
-    return member
-
-
 @client.event
 async def on_message(message):
     if message.author.bot:
@@ -404,9 +387,16 @@ async def sdice_command(interaction: discord.Interaction,amount:app_commands.Ran
 @tree.command(name="rolepannel", description="PL等を管理するためのロールパネルを作成します(管理者専用)")
 @app_commands.default_permissions(administrator=True)
 async def rolepannel_command(interaction: discord.Interaction,role:discord.Role,role2:discord.Role=None,role3:discord.Role=None,role4:discord.Role=None,role5:discord.Role=None):
-    await interaction.response.send_message(roading)
+    if role2!="":
+        add_discription=f"\n<@&{role2}>:🇧"
+    if role3!="":
+        add_discription=f"{add_discription}\n<@&{role3}>:🇨"
+    if role4!="":
+        add_discription=f"{add_discription}\n<@&{role4}>:🇩"
+    if role5!="":
+        add_discription=f"{add_discription}\n<@&{role5}>:🇪"
     enbed=discord.Embed(
-        discription=f"<@&{role}>:🇦\n\nリアクションを押すとロールを取得・解除できます。"
+        discription=f"<@&{role}>:🇦{add_discription}\n\nリアクションを押すとロールを取得・解除できます。"
         color=0xbef604
     )
     embed.set_footer(text="Reaction Role Panel")
@@ -416,5 +406,13 @@ async def rolepannel_command(interaction: discord.Interaction,role:discord.Role,
     
     try:
         await panel_message.add_reaction("🇦")
+        if role2!="":
+            await panel_message.add_reaction("🇧")
+        if role3!="":
+            await panel_message.add_reaction("🇨")
+        if role4!="":
+            await panel_message.add_reaction("🇩")
+        if role5!="":
+            await panel_message.add_reaction("🇪")
 
 client.run(TOKEN)

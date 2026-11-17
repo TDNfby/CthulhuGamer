@@ -55,6 +55,22 @@ def d(value):
             else:
                 return "**失敗**",number,colorset
 
+# ロールパネルの関数
+async def grant_role(payload):
+    # 絵文字が異なる場合は処理を打ち切る
+    if payload.emoji.name != emoji_list: 
+        return
+
+    # チャンネルが異なる場合は処理を打ち切る
+    if payload.channel_id != interaction.channel_ID:
+        return
+
+    # Member オブジェクトと Role オブジェクトを取得して役職を付与
+    member = payload.member
+    role = guild.get_role(role_list)
+    await member.add_roles(role)
+    return member
+
 
 @client.event
 async def on_message(message):

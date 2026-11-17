@@ -8,7 +8,7 @@ import random
 import re
 
 app = Flask(__name__)
-guildname = message.guild.name
+guildname = guild.name
 
 @app.route("/")
 def home():

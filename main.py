@@ -386,17 +386,34 @@ async def sdice_command(interaction: discord.Interaction,amount:app_commands.Ran
 # /rolepannel
 @tree.command(name="rolepannel", description="PL等を管理するためのロールパネルを作成します(管理者専用)")
 @app_commands.default_permissions(administrator=True)
-async def rolepannel_command(interaction: discord.Interaction,role:discord.Role,role2:discord.Role=None,role3:discord.Role=None,role4:discord.Role=None,role5:discord.Role=None):
-    if role2!="":
-        add_discription="\n<@&{role2.id}>:🇧"
-    if role3!="":
-        add_discription="{add_discription}\n<@&{role3}>:🇨"
-    if role4!="":
-        add_discription="{add_discription}\n<@&{role4}>:🇩"
-    if role5!="":
-        add_discription="{add_discription}\n<@&{role5}>:🇪"
-    enbed=discord.Embed(
-        discription=f"<@&{role.id}>:🇦{add_discription}\n\nリアクションを押すとロールを取得・解除できます。"
+async def rolepannel_command(
+    interaction: discord.Interaction,
+    role: discord.Role,
+    role2: discord.Role = None,
+    role3: discord.Role = None,
+    role4: discord.Role = None,
+    role5: discord.Role = None
+):
+    # 追加するテキストとリアクションのリストを準備
+    add_description = ""
+    reactions = ["🇦"]
+
+    # role2〜role5 が指定されている場合（Noneではない場合）のみ追記する
+    extra_roles = [
+        (role2, "🇧"),
+        (role3, "🇨"),
+        (role4, "🇩"),
+        (role5, "🇪")
+    ]
+
+    for r, emoji in extra_roles:
+        if r is not None:
+            add_description += f"\n<@&{r.id}>:{emoji}"
+            reactions.append(emoji)
+
+    # Embedの作成
+    embed = discord.Embed(
+        description=f"<@&{role.id}>:🇦{add_description}\n\nリアクションを押すとロールを取得・解除できます。",
         color=0xbef604
     )
     embed.set_footer(text="Reaction Role Panel")
@@ -404,15 +421,12 @@ async def rolepannel_command(interaction: discord.Interaction,role:discord.Role,
     await interaction.response.send_message(embed=embed)
     panel_message = await interaction.original_response()
     
+    # 指定された分のリアクションを順番につける
     try:
-        await panel_message.add_reaction("🇦")
-        if role2!="":
-            await panel_message.add_reaction("🇧")
-        if role3!="":
-            await panel_message.add_reaction("🇨")
-        if role4!="":
-            await panel_message.add_reaction("🇩")
-        if role5!="":
-            await panel_message.add_reaction("🇪")
+        for emoji in reactions:
+            await panel_message.add_reaction(emoji)
+    except discord.HTTPException:
+        await interaction.followup.send("エラー: リアクションの付与に失敗しました。", ephemeral=True)
+
 
 client.run(TOKEN)

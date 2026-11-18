@@ -226,6 +226,7 @@ async def ccb_command(
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
     if str(interaction.user.id) in data and str(interaction.channel.id) in check:
+      data = load_data()
       data[str(interaction.user.id)]["cricount"]=data[str(interaction.user.id)]["cricount"]+cricount
       save_data(data)
     set_author(embed, interaction, ability or None)
@@ -264,6 +265,7 @@ async def resb_command(
             color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
         )
     if str(interaction.user.id) in data and str(interaction.channel.id) in check:
+      data = load_data()
       data[str(interaction.user.id)]["cricount"]=data[str(interaction.user.id)]["cricount"]+cricount
       save_data(data)
     set_author(embed, interaction, ability or None)
@@ -291,6 +293,7 @@ async def cbrb_command(
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
     if str(interaction.user.id) in data and str(interaction.channel.id) in check:
+      data = load_data()
       data[str(interaction.user.id)]["cricount"]=data[str(interaction.user.id)]["cricount"]+cricount
       save_data(data)
     set_author(embed, interaction, footer_text or None)
@@ -339,6 +342,7 @@ async def sccb_command(
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
     if str(interaction.user.id) in data and str(interaction.channel.id) in check:
+      data = load_data()
       data[str(interaction.user.id)]["cricount"]=data[str(interaction.user.id)]["cricount"]+cricount
       save_data(data)
     set_author(embed, interaction, ability or None)
@@ -377,6 +381,7 @@ async def sresb_command(
             color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
         )
     if str(interaction.user.id) in data and str(interaction.channel.id) in check:
+      data = load_data()
       data[str(interaction.user.id)]["cricount"]=data[str(interaction.user.id)]["cricount"]+cricount
       save_data(data)
     set_author(embed, interaction, ability or None)
@@ -404,6 +409,7 @@ async def scbrb_command(
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
     if str(interaction.user.id) in data and str(interaction.channel.id) in check:
+      data = load_data()
       data[str(interaction.user.id)]["cricount"]=data[str(interaction.user.id)]["cricount"]+cricount
       save_data(data)
     set_author(embed, interaction, footer_text or None)

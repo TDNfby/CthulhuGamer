@@ -76,24 +76,25 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 # 判定ロジック
 # ------------------------------
 def d(value):
+    cricount=0
     """1D100 を振って技能判定。 (ログ文言, 出目) を返す"""
     number = random.randint(1, 100)
     if number <= value / 5:
         if number <= 5:
             cricount=1
             return "**成功/決定的成功/スペシャル**", number, 1 ,cricount
-        cricount=0
+        cricount+=0
         return "**成功/スペシャル**", number, 1 ,cricount
     if number <= value:
         if number <= 5:
             cricount=1
             return "**成功/決定的成功**", number, 1 ,cricount
-        cricount=0
+        cricount+=0
         return "**成功**", number, 1 ,cricount
     if number >= 96:
-        cricount=0
+        cricount+=0
         return "**失敗/致命的失敗**", number, 0 ,cricount
-    cricount=0
+    cricount+=0
     return "**失敗**", number, 0 ,cricount
 
 
@@ -226,6 +227,7 @@ async def ccb_command(
     )
     if interaction.user.id in data and interaction.channel.id in check:
       data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
+      save_data(data)
     set_author(embed, interaction, ability or None)
     await interaction.response.send_message(embed=embed)
 
@@ -263,6 +265,7 @@ async def resb_command(
         )
     if interaction.user.id in data and interaction.channel.id in check:
       data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
+      save_data(data)
     set_author(embed, interaction, ability or None)
     await interaction.response.send_message(embed=embed)
 
@@ -289,6 +292,7 @@ async def cbrb_command(
     )
     if interaction.user.id in data and interaction.channel.id in check:
       data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
+      save_data(data)
     set_author(embed, interaction, footer_text or None)
     await interaction.response.send_message(embed=embed)
 
@@ -336,6 +340,7 @@ async def sccb_command(
     )
     if interaction.user.id in data and interaction.channel.id in check:
       data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
+      save_data(data)
     set_author(embed, interaction, ability or None)
     await send_secret(interaction, embed)
 
@@ -373,6 +378,7 @@ async def sresb_command(
         )
     if interaction.user.id in data and interaction.channel.id in check:
       data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
+      save_data(data)
     set_author(embed, interaction, ability or None)
     await send_secret(interaction, embed)
 
@@ -399,6 +405,7 @@ async def scbrb_command(
     )
     if interaction.user.id in data and interaction.channel.id in check:
       data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
+      save_data(data)
     set_author(embed, interaction, footer_text or None)
     await send_secret(interaction, embed)
 
@@ -547,7 +554,7 @@ async def set_kprole(interaction:discord.Interaction,kprole:discord.Role):
 	
   await interaction.response.send_message(f"<@&{kprole.id}>をKPのロールとして設定しました",ephemeral=True)
 
-# /session(完成)
+# /session
 @tree.command(name="session",description="セッションの準備(クリティカルやステータスの管理)をします(セッションを行うチャンネルで実行してください)(KP専用)")
 async def session(interaction:discord.Interaction):
   guild_id = str(interaction.guild.id)
@@ -671,7 +678,7 @@ async def adder(interaction:discord.Interaction,target_status:Literal["hp","mp",
 
 # /status
 @tree.command(name="status",description="ステータスを表示します")
-@app_commands.describe(target_status="表示したいステータス(未入力で全部)",public="ステータスを公開するか(未入力で公開)")
+@app_commands.describe(target_status="表示したいステータス(未入力で全部)",public="ステータスを公開するか(未入力で非公開)")
 async def status(interaction:discord.Interaction,target_status:Optional[Literal["hp","mp","san"]],public:bool=None):
   user_id=str(interaction.user.id)
   channel_id=str(interaction.channel.id)

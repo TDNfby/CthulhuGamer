@@ -4,7 +4,10 @@ import json
 import random
 import threading
 import traceback
+import re
 from discord import app_commands
+from typing import Literal,Optional
+
 
 # Flask は無くても Bot 自体は動くようにする
 try:
@@ -56,7 +59,6 @@ async def on_ready():
         print("コマンド同期に失敗しました:")
         traceback.print_exc()
 
-
 @tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
     print(f"コマンド実行エラー: {interaction.command.name if interaction.command else 'unknown'}")
@@ -78,15 +80,21 @@ def d(value):
     number = random.randint(1, 100)
     if number <= value / 5:
         if number <= 5:
-            return "**成功/決定的成功/スペシャル**", number, 1
-        return "**成功/スペシャル**", number, 1
+            cricount=1
+            return "**成功/決定的成功/スペシャル**", number, 1 ,cricount
+        cricount=0
+        return "**成功/スペシャル**", number, 1 ,cricount
     if number <= value:
         if number <= 5:
-            return "**成功/決定的成功**", number, 1
-        return "**成功**", number, 1
+            cricount=1
+            return "**成功/決定的成功**", number, 1 ,cricount
+        cricount=0
+        return "**成功**", number, 1 ,cricount
     if number >= 96:
-        return "**失敗/致命的失敗**", number, 0
-    return "**失敗**", number, 0
+        cricount=0
+        return "**失敗/致命的失敗**", number, 0 ,cricount
+    cricount=0
+    return "**失敗**", number, 0 ,cricount
 
 
 def judge_log(number, value):
@@ -132,11 +140,28 @@ def load_data():
             return {}
     return {}
 
-
 def save_data(data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
+        
+data=load_data()
 
+CHECK_FILE = "channel_check.json"
+
+def load_check_data():
+    if os.path.exists(CHECK_FILE):
+        try:
+            with open(CHECK_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return {}
+    return {}
+
+def save_check_data(checker):
+    with open(CHECK_FILE, "w", encoding="utf-8") as f:
+        json.dump(checker, f, ensure_ascii=False, indent=4)
+
+check=load_check_data()
 
 @client.event
 async def on_message(message):
@@ -192,13 +217,15 @@ async def ccb_command(
     interaction: discord.Interaction,
     successvalue: app_commands.Range[int, 1, None],
     ability: str = None
-):
-    log, number, colorset = d(successvalue)
+   ):
+    log, number, colorset ,cricount= d(successvalue)
     embed = discord.Embed(
         title=log,
         description=f"**1D100<={successvalue}**\n ->{number}",
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
+    if interaction.user.id in data and interaction.channel.id in check:
+      data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
     set_author(embed, interaction, ability or None)
     await interaction.response.send_message(embed=embed)
 
@@ -225,7 +252,7 @@ async def resb_command(
             color=FAIL_COLOR
         )
     else:
-        log, number, colorset = d(successvalue)
+        log, number, colorset ,cricount= d(successvalue)
         embed = discord.Embed(
             title=log,
             description=(
@@ -234,7 +261,8 @@ async def resb_command(
             ),
             color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
         )
-
+    if interaction.user.id in data and interaction.channel.id in check:
+      data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
     set_author(embed, interaction, ability or None)
     await interaction.response.send_message(embed=embed)
 
@@ -247,7 +275,7 @@ async def cbrb_command(
     ability1: str = None,
     ability2: str = None
 ):
-    log, number, colorset = d(successvalue1)
+    log, number, colorset ,cricount= d(successvalue1)
     log2 = judge_log(number, successvalue2)
 
     ability_log1 = f"{log}({ability1})" if ability1 else log
@@ -259,6 +287,8 @@ async def cbrb_command(
         description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
+    if interaction.user.id in data and interaction.channel.id in check:
+      data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
     set_author(embed, interaction, footer_text or None)
     await interaction.response.send_message(embed=embed)
 
@@ -298,12 +328,14 @@ async def sccb_command(
     successvalue: app_commands.Range[int, 1, None],
     ability: str = None
 ):
-    log, number, colorset = d(successvalue)
+    log, number, colorset,cricount= d(successvalue)
     embed = discord.Embed(
         title=log,
         description=f"**1D100<={successvalue}**\n ->{number}",
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
+    if interaction.user.id in data and interaction.channel.id in check:
+      data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
     set_author(embed, interaction, ability or None)
     await send_secret(interaction, embed)
 
@@ -330,7 +362,7 @@ async def sresb_command(
             color=FAIL_COLOR
         )
     else:
-        log, number, colorset = d(successvalue)
+        log, number, colorset,cricount = d(successvalue)
         embed = discord.Embed(
             title=log,
             description=(
@@ -339,7 +371,8 @@ async def sresb_command(
             ),
             color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
         )
-
+    if interaction.user.id in data and interaction.channel.id in check:
+      data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
     set_author(embed, interaction, ability or None)
     await send_secret(interaction, embed)
 
@@ -352,7 +385,7 @@ async def scbrb_command(
     ability1: str = None,
     ability2: str = None
 ):
-    log, number, colorset = d(successvalue1)
+    log, number, colorset ,cricount= d(successvalue1)
     log2 = judge_log(number, successvalue2)
 
     ability_log1 = f"{log}({ability1})" if ability1 else log
@@ -364,6 +397,8 @@ async def scbrb_command(
         description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
+    if interaction.user.id in data and interaction.channel.id in check:
+      data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
     set_author(embed, interaction, footer_text or None)
     await send_secret(interaction, embed)
 
@@ -495,6 +530,189 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
         if member:
             await member.remove_roles(role)
             await member.send(f"**{guild.name}**でロール:**{role.name}**を解除しました。")
+            
+
+# /set_kp
+@tree.command(name="set_kp",description="KPに持たせるロールを設定します(管理者専用)")
+@app_commands.default_permissions(administrator=True)
+async def set_kprole(interaction:discord.Interaction,kprole:discord.Role):
+  check=load_check_data()
+  guild_id = str(interaction.guild.id)
+  if guild_id not in check:
+    check[guild_id] = {}
+	
+	# ロールのID（数字）を保存する
+  check[guild_id]["kp_role_id"] = kprole.id
+  save_check_data(check)
+	
+  await interaction.response.send_message(f"<@&{kprole.id}>をKPのロールとして設定しました",ephemeral=True)
+
+# /session(完成)
+@tree.command(name="session",description="セッションの準備(クリティカルやステータスの管理)をします(セッションを行うチャンネルで実行してください)(KP専用)")
+async def session(interaction:discord.Interaction):
+  guild_id = str(interaction.guild.id)
+  kp_role_id = check.get(guild_id, {}).get("kp_role_id")
+
+  if not kp_role_id or not any(role.id == kp_role_id for role in interaction.user.roles):
+    await interaction.response.send_message("このコマンドを実行する権限がありません（または`/set_kp`でKPロールが未設定です）", ephemeral=True)
+    return
+  channel_id=str(interaction.channel.id)
+  if channel_id not in check:
+    check[channel_id]={}
+  if check[channel_id].get("sessioncheck", 0) ==0:
+    check[channel_id]["sessioncheck"]=1
+    save_check_data(check)
+    await interaction.response.send_message("実行されました！\nPLは`/set_status`でステータスを設定してください！")
+  else:
+    await interaction.response.send_message("実行済みです",ephemeral=True)
+
+# /out_session
+@tree.command(name="out_session",description="セッションを終了し、結果を表示します(KP専用)")
+async def out_session(interaction:discord.Interaction):
+
+  guild_id = str(interaction.guild.id)
+  kp_role_id = check.get(guild_id, {}).get("kp_role_id")
+
+  if not kp_role_id or not any(role.id == kp_role_id for role in interaction.user.roles):
+    await interaction.response.send_message("このコマンドを実行する権限がありません（または`/set_kp`でKPロールが未設定です）", ephemeral=True)
+    return
+
+  channel_id=str(interaction.channel.id)
+  if channel_id not in check:
+    await interaction.response.send_message("このチャンネルで`/session`は実行されていません",ephemeral=True)
+    return
+  if check[channel_id].get("sessioncheck",0) ==1:
+    check[channel_id]["sessioncheck"]=0
+    save_check_data(check)
+    data = load_data() # データが空だった場合
+    if not data:
+      await interaction.response.send_message("まだデータがありません。") 
+      await interaction.followup.send("セッションを終了しました")
+      return
+		 # 1人ずつテキストにまとめる 
+    lines = [] 
+    for user_id, status in data.items():
+      pcname=status.get("pcname","未設定")
+      hp=status.get("hp",0)
+      mp=status.get("mp",0)
+      san=status.get("san",0)
+      cricount=status.get("cricount",0)
+      lines.append(f"<@{user_id}>:**{pcname}**  \nHP:{hp}\nMP:{mp}\nSAN:{san}\nクリティカル:{cricount}")
+		# 全部つなげて1つの文章にする  
+    result_text = "\n".join(lines) 
+    embed=discord.Embed(
+      title="ステータス一覧",
+      description=f"\n{result_text}",
+      color=NORMAL_COLOR
+		)
+    await interaction.response.send_message(embed=embed, allowed_mentions=discord.AllowedMentions.none())
+    await interaction.followup.send("セッションを終了しました")
+    save_data({})
+  else:
+    await interaction.response.send_message("このチャンネルで`/session`は実行中ではありません",ephemeral=True)
+
+# /set_status
+@tree.command(name="set_status",description="PCの名前,HP,MP,SANの初期値を設定します")
+@app_commands.describe(pcname="PCの名前",hp="初期HP",mp="初期MP",san="初期SAN")
+async def set_status(interaction:discord.Interaction,pcname:str,hp:int,mp:int,san:int):
+  channel_id=str(interaction.channel.id)
+  if channel_id not in check or check[channel_id].get("sessioncheck",0)!=1:
+    await interaction.response.send_message("先に`/session`を使用してセッションを開始してください",ephemeral=True)
+    return
+  user_id=str(interaction.user.id)
+  data=load_data()
+  data[user_id]={}
+  data[user_id]["pcname"]=pcname
+  data[user_id]["hp"]=hp
+  data[user_id]["mp"]=mp
+  data[user_id]["san"]=san
+  data[user_id]["cricount"]=0
+  save_data(data)
+  embed=discord.Embed(
+    title=f"**{pcname}**",
+    description=f"HP:{hp}\nMP:{mp} \nSAN:{san}",
+    color=NORMAL_COLOR
+  )
+  await interaction.response.send_message(embed=embed)
+  
+# /set
+@tree.command(name="set",description="PCのHP,MP,SANの値を変更します")
+@app_commands.describe(target_status= "変更したいステータス")
+async def setter(interaction:discord.Interaction,target_status:Literal["hp","mp","san"],amount:int):
+  channel_id=str(interaction.channel.id)
+  if channel_id not in check or check[channel_id].get("sessioncheck",0)!=1:
+    await interaction.response.send_message("先に`/session`を使用してセッションを開始してください",ephemeral=True)
+    return
+  user_id=str(interaction.user.id)
+  data=load_data()
+  if user_id not in data:
+    await interaction.response.send_message("先に`/set_status`でPCの初期ステータスを設定してください")
+    return
+  data[user_id][target_status]=amount
+  save_data(data)
+  await interaction.response.send_message(f"{target_status.upper()}を{amount}に設定しました！",ephemeral=True)
+
+# /add
+@tree.command(name="add",description="PCのHP,MP,SANの値を増やしたり減らしたりします")
+@app_commands.describe(target_status= "変更したいステータス")
+async def adder(interaction:discord.Interaction,target_status:Literal["hp","mp","san"],amount:int):
+  channel_id=str(interaction.channel.id)
+  if channel_id not in check or check[channel_id].get("sessioncheck",0)!=1:
+    await interaction.response.send_message("先に`/session`を使用してセッションを開始してください",ephemeral=True)
+    return
+  user_id=str(interaction.user.id)
+  data=load_data()
+  if user_id not in data:
+    await interaction.response.send_message("先に`/set_status`でPCの初期ステータスを設定してください")
+    return
+  data[user_id][target_status]= data[user_id][target_status]+amount
+  save_data(data)
+  await interaction.response.send_message(f"{target_status.upper()}を{data[user_id][target_status]}に設定しました！",ephemeral=True)
+
+# /status
+@tree.command(name="status",description="ステータスを表示します")
+@app_commands.describe(target_status="表示したいステータス(未入力で全部)",public="ステータスを公開するか(未入力で公開)")
+async def status(interaction:discord.Interaction,target_status:Optional[Literal["hp","mp","san"]],public:bool=None):
+  user_id=str(interaction.user.id)
+  channel_id=str(interaction.channel.id)
+  if channel_id not in check:
+    await interaction.response.send_message("このチャンネルで`/session`は実行されていません",ephemeral=True)
+    return
+  if check[channel_id].get("sessioncheck",0) ==1:
+    data = load_data() # データが空だった場合
+    if not data:
+      await interaction.response.send_message("まだデータがありません。") 
+      return
+    if target_status==None:
+      pcname=data[user_id]["pcname"]
+      hp= data[user_id]["hp"]
+      mp= data[user_id]["mp"]
+      san= data[user_id]["san"]
+      cricount= data[user_id]["cricount"]
+      result=(f"HP:{hp}\nMP:{mp}\nSAN:{san}\nクリティカル数:{cricount}")
+    else:
+      if public or None:
+        instantpcname= data[user_id]["pcname"]
+        await interaction.response.send_message(f"{instantpcname}の{target_status}は{data[user_id][target_status]}です")
+        return
+        
+      else: 
+        instantpcname= data[user_id]["pcname"]
+        await interaction.response.send_message(f"{instantpcname}の{target_status}は{data[user_id][target_status]}です",ephemeral=True)
+        return
+        
+    instantpcname= data[user_id]["pcname"]
+    embed=discord.Embed(
+      title=f"**{instantpcname}のステータス**",
+      description=f"\n{result}",
+      color=NORMAL_COLOR
+    )
+    if public or None:
+      await interaction.response.send_message(embed=embed)
+    else:
+      await interaction.response.send_message(embed=embed,ephemeral=True)
+		  
+      
 
 # ------------------------------
 # 起動

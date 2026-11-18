@@ -83,18 +83,18 @@ def d(value):
         if number <= 5:
             cricount=1
             return "**成功/決定的成功/スペシャル**", number, 1 ,cricount
-        cricount+=0
+        cricount=0
         return "**成功/スペシャル**", number, 1 ,cricount
     if number <= value:
         if number <= 5:
             cricount=1
             return "**成功/決定的成功**", number, 1 ,cricount
-        cricount+=0
+        cricount=0
         return "**成功**", number, 1 ,cricount
     if number >= 96:
-        cricount+=0
+        cricount=0
         return "**失敗/致命的失敗**", number, 0 ,cricount
-    cricount+=0
+    cricount=0
     return "**失敗**", number, 0 ,cricount
 
 
@@ -225,8 +225,8 @@ async def ccb_command(
         description=f"**1D100<={successvalue}**\n ->{number}",
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
-    if interaction.user.id in data and interaction.channel.id in check:
-      data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
+    if str(interaction.user.id) in data and str(interaction.channel.id) in check:
+      data[str(interaction.user.id)]["cricount"]=data[str(interaction.user.id)]["cricount"]+cricount
       save_data(data)
     set_author(embed, interaction, ability or None)
     await interaction.response.send_message(embed=embed)
@@ -263,8 +263,8 @@ async def resb_command(
             ),
             color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
         )
-    if interaction.user.id in data and interaction.channel.id in check:
-      data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
+    if str(interaction.user.id) in data and str(interaction.channel.id) in check:
+      data[str(interaction.user.id)]["cricount"]=data[str(interaction.user.id)]["cricount"]+cricount
       save_data(data)
     set_author(embed, interaction, ability or None)
     await interaction.response.send_message(embed=embed)
@@ -290,8 +290,8 @@ async def cbrb_command(
         description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
-    if interaction.user.id in data and interaction.channel.id in check:
-      data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
+    if str(interaction.user.id) in data and str(interaction.channel.id) in check:
+      data[str(interaction.user.id)]["cricount"]=data[str(interaction.user.id)]["cricount"]+cricount
       save_data(data)
     set_author(embed, interaction, footer_text or None)
     await interaction.response.send_message(embed=embed)
@@ -338,8 +338,8 @@ async def sccb_command(
         description=f"**1D100<={successvalue}**\n ->{number}",
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
-    if interaction.user.id in data and interaction.channel.id in check:
-      data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
+    if str(interaction.user.id) in data and str(interaction.channel.id) in check:
+      data[str(interaction.user.id)]["cricount"]=data[str(interaction.user.id)]["cricount"]+cricount
       save_data(data)
     set_author(embed, interaction, ability or None)
     await send_secret(interaction, embed)
@@ -376,8 +376,8 @@ async def sresb_command(
             ),
             color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
         )
-    if interaction.user.id in data and interaction.channel.id in check:
-      data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
+    if str(interaction.user.id) in data and str(interaction.channel.id) in check:
+      data[str(interaction.user.id)]["cricount"]=data[str(interaction.user.id)]["cricount"]+cricount
       save_data(data)
     set_author(embed, interaction, ability or None)
     await send_secret(interaction, embed)
@@ -403,8 +403,8 @@ async def scbrb_command(
         description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
-    if interaction.user.id in data and interaction.channel.id in check:
-      data[interaction.user.id]["cricount"]=data[interaction.user.id]["cricount"]+cricount
+    if str(interaction.user.id) in data and str(interaction.channel.id) in check:
+      data[str(interaction.user.id)]["cricount"]=data[str(interaction.user.id)]["cricount"]+cricount
       save_data(data)
     set_author(embed, interaction, footer_text or None)
     await send_secret(interaction, embed)
@@ -543,7 +543,6 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
 @tree.command(name="set_kp",description="KPに持たせるロールを設定します(管理者専用)")
 @app_commands.default_permissions(administrator=True)
 async def set_kprole(interaction:discord.Interaction,kprole:discord.Role):
-  check=load_check_data()
   guild_id = str(interaction.guild.id)
   if guild_id not in check:
     check[guild_id] = {}
@@ -687,7 +686,7 @@ async def status(interaction:discord.Interaction,target_status:Optional[Literal[
     return
   if check[channel_id].get("sessioncheck",0) ==1:
     data = load_data() # データが空だった場合
-    if not data:
+    if user_id not in data:
       await interaction.response.send_message("まだデータがありません。") 
       return
     if target_status==None:

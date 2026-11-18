@@ -7,12 +7,6 @@ from flask import Flask
 import random
 import re
 
-app = Flask(__name__)
-
-@app.route("/")
-def home():
-    return "Hello World!"
-
 TOKEN = os.environ["DISCORD_TOKEN"]
 
 intents = discord.Intents.default()

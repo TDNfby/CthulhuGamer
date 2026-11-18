@@ -1,393 +1,402 @@
 import discord
 import os
-from discord import app_commands
-from discord.ext import commands
-import threading
-from flask import Flask
+import json
 import random
-import re
+import threading
+import traceback
+from discord import app_commands
 
-TOKEN = os.environ["DISCORD_TOKEN"]
+# Flask は無くても Bot 自体は動くようにする
+try:
+    from flask import Flask
+except ImportError:  # flask未インストールでも起動を止めない
+    Flask = None
 
+TOKEN = os.environ.get("DISCORD_TOKEN")
+if not TOKEN:
+    raise RuntimeError("環境変数 DISCORD_TOKEN が設定されていません")
+
+app = Flask(__name__) if Flask else None
+
+
+def run_web():
+    if app is None:
+        print("flask がインストールされていないため Web サーバーは起動しません")
+        return
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port, use_reloader=False, threaded=True)
+
+
+if app is not None:
+    @app.route("/")
+    def home():
+        return "Hello World!"
+
+
+# ------------------------------
+# Bot クライアント
+# ------------------------------
 intents = discord.Intents.default()
 intents.message_content = True
-intents.reactions=True
-intents.members=True
+intents.reactions = True
+intents.members = True
+intents.dm_messages = True
+
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
+
 @client.event
 async def on_ready():
-    print('ログインしました')
-    await tree.sync()
+    print(f'ログインしました: {client.user}')
+    try:
+        synced = await tree.sync()
+        print(f"スラッシュコマンドを同期しました: {len(synced)}件")
+    except Exception:
+        print("コマンド同期に失敗しました:")
+        traceback.print_exc()
 
-#正誤判定の関数
+
+@tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    print(f"コマンド実行エラー: {interaction.command.name if interaction.command else 'unknown'}")
+    traceback.print_exception(type(error), error, error.__traceback__)
+    try:
+        if interaction.response.is_done():
+            await interaction.followup.send("エラーが発生しました。", ephemeral=True)
+        else:
+            await interaction.response.send_message("エラーが発生しました。", ephemeral=True)
+    except Exception:
+        pass
+
+
+# ------------------------------
+# 判定ロジック
+# ------------------------------
 def d(value):
-    number=random.randint(1,100)
-    if number<=value/5:
-        colorset=1
-        if number<=5:
-            return "**成功/決定的成功/スペシャル**",number,colorset
-        else:
-            return "**成功/スペシャル**",number,colorset
-    else:
-        if number<=value:
-            colorset=1
-            if number<=5:
-                return "**成功/決定的成功**",number,colorset
-            else:
-                return "**成功**",number,colorset
-        else:
-            colorset=0
-            if number>=96:
-                return "**失敗/致命的失敗**",number,colorset
-            else:
-                return "**失敗**",number,colorset
+    """1D100 を振って技能判定。 (ログ文言, 出目) を返す"""
+    number = random.randint(1, 100)
+    if number <= value / 5:
+        if number <= 5:
+            return "**成功/決定的成功/スペシャル**", number, 1
+        return "**成功/スペシャル**", number, 1
+    if number <= value:
+        if number <= 5:
+            return "**成功/決定的成功**", number, 1
+        return "**成功**", number, 1
+    if number >= 96:
+        return "**失敗/致命的失敗**", number, 0
+    return "**失敗**", number, 0
 
-# PL毎のステータスやクリティカル数を保存するdic
+
+def judge_log(number, value):
+    """出目 number を技能値 value で判定した結果の文言だけを返す"""
+    if number <= value / 5:
+        if number <= 5:
+            return "**成功/決定的成功/スペシャル**"
+        return "**成功/スペシャル**"
+    if number <= value:
+        if number <= 5:
+            return "**成功/決定的成功**"
+        return "**成功**"
+    if number >= 96:
+        return "**失敗/致命的失敗**"
+    return "**失敗**"
+
+
+SUCCESS_COLOR = 0x3773FF
+FAIL_COLOR = 0xe60628
+NORMAL_COLOR = 0xbef604
+
+
+def set_author(embed, interaction, footer=None):
+    embed.set_author(
+        name=interaction.user.display_name,
+        icon_url=interaction.user.display_avatar.url
+    )
+    if footer:
+        embed.set_footer(text=footer)
+    return embed
+
+
+# PL毎のステータス等を保存するdic
 DATA_FILE = "user_data.json"
 
-# データの読み込み関数
+
 def load_data():
     if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+        try:
+            with open(DATA_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return {}
     return {}
 
 
-# データの保存関数
 def save_data(data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
+
 
 @client.event
 async def on_message(message):
     if message.author.bot:
         return
-    
+
     if message.content == '!test':
         await message.channel.send("テスト")
 
-# /ccb
+
+# ------------------------------
+# シークレット（DM）送信ヘルパー
+# 3秒ルール対策のため必ず先に defer してから DM する
+# ------------------------------
+async def send_secret(interaction: discord.Interaction, embed: discord.Embed):
+    if not interaction.response.is_done():
+        try:
+            await interaction.response.defer(thinking=True)
+        except discord.HTTPException:
+            traceback.print_exc()
+
+    try:
+        await interaction.user.send(embed=embed)
+    except discord.Forbidden:
+        print(f"DM送信失敗(Forbidden): {interaction.user} (id={interaction.user.id})")
+        await interaction.followup.send(
+            "DMを送信できませんでした。\n"
+            "Discordの「プライバシー設定」→「サーバーメンバーからのDMを許可」を"
+            "ONにしてください（スマホのアプリ設定／各サーバーのプライバシー設定）。",
+            ephemeral=True
+        )
+        return
+    except discord.HTTPException as e:
+        print(f"DM送信失敗(HTTP {e.status} code={e.code}): {interaction.user}")
+        traceback.print_exc()
+        await interaction.followup.send(
+            f"DM送信に失敗しました（{e.status} / code {e.code}）。", ephemeral=True
+        )
+        return
+    except Exception:
+        traceback.print_exc()
+        await interaction.followup.send("DM送信に失敗しました。", ephemeral=True)
+        return
+
+    await interaction.followup.send("🎲シークレットダイス")
+
+
+# ------------------------------
+# 通常ダイス
+# ------------------------------
 @tree.command(name="ccb", description="技能判定用クトゥルフダイスを振ります")
-
-async def ccb_command(interaction: discord.Interaction,successvalue:app_commands.Range[int, 1, None],ability:str=None):
-    
-    # ダイスの出目判定
-    log,number,colorset=d(successvalue)
-    
-    # 失敗か成功かで埋め込みメッセージの色を変える
-    if colorset == 1:
-        # 成功
-        embed = discord.Embed(
-            title=log,
-            description=f"**1D100<={successvalue}**\n ->{number}",
-            color=0x3773FF
-        )
-    else:
-        # 失敗
-        embed = discord.Embed(
-            title=log,
-            description=f"**1D100<={successvalue}**\n ->{number}",
-            color=0xe60628
-        )
-    embed.set_author(
-        name=interaction.user.display_name,
-        icon_url=interaction.user.display_avatar.url
+async def ccb_command(
+    interaction: discord.Interaction,
+    successvalue: app_commands.Range[int, 1, None],
+    ability: str = None
+):
+    log, number, colorset = d(successvalue)
+    embed = discord.Embed(
+        title=log,
+        description=f"**1D100<={successvalue}**\n ->{number}",
+        color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
-    embed.set_footer(text=ability or "")
+    set_author(embed, interaction, ability or None)
     await interaction.response.send_message(embed=embed)
 
-# /resb
+
 @tree.command(name="resb", description="対抗ロール用クトゥルフダイスを振ります")
+async def resb_command(
+    interaction: discord.Interaction,
+    yourstatus: app_commands.Range[int, 1, None],
+    enemystatus: app_commands.Range[int, 1, None],
+    ability: str = None
+):
+    successvalue = 50 + (yourstatus - enemystatus) * 5
 
-async def resb_command(interaction: discord.Interaction,yourstatus:app_commands.Range[int, 1, None],enemystatus:app_commands.Range[int,1,None],ability:str=None):
-    # ダイスの出目判定
-    successvalue=50+(yourstatus-enemystatus)*5
-    
-    if successvalue>=100:
-        # 自動成功
+    if successvalue >= 100:
         embed = discord.Embed(
             title="自動成功",
             description=f"**resb({yourstatus}-{enemystatus})**\n ->自動成功",
-            color=0x3773FF
-            )
+            color=SUCCESS_COLOR
+        )
+    elif successvalue <= 0:
+        embed = discord.Embed(
+            title="自動失敗",
+            description=f"**resb({yourstatus}-{enemystatus})**\n ->自動失敗",
+            color=FAIL_COLOR
+        )
     else:
-            if successvalue<=0:
-                # 自動失敗
-                embed = discord.Embed(
-                title="自動失敗",
-                description=f"**resb({yourstatus}-{enemystatus})**\n ->自動失敗",
-                color=0xe60628
-                )
-            else:
-                log,number,colorset=d(successvalue)
-    
-                # 失敗か成功かで埋め込みメッセージの色を変える
-                if colorset == 1:
-                    # 成功
-                    embed = discord.Embed(
-                        title=log,
-                        description=f"**resb({yourstatus}-{enemystatus})**\n\n**1D100<={successvalue}**\n ->{number}",
-                        color=0x3773FF
-                    )
-                else:
-                    # 失敗
-                    embed = discord.Embed(
-                        title=log,
-                        description=f"**resb({yourstatus}-{enemystatus})**\n\n**1D100<={successvalue}**\n ->{number}",
-                        color=0xe60628
-                    )
-    embed.set_author(
-        name=interaction.user.display_name,
-        icon_url=interaction.user.display_avatar.url
-    )
-    embed.set_footer(text=ability or "")
+        log, number, colorset = d(successvalue)
+        embed = discord.Embed(
+            title=log,
+            description=(
+                f"**resb({yourstatus}-{enemystatus})**\n\n"
+                f"**1D100<={successvalue}**\n ->{number}"
+            ),
+            color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
+        )
+
+    set_author(embed, interaction, ability or None)
     await interaction.response.send_message(embed=embed)
 
-# /cbrb
+
 @tree.command(name="cbrb", description="組み合わせロール用クトゥルフダイスを振ります")
+async def cbrb_command(
+    interaction: discord.Interaction,
+    successvalue1: app_commands.Range[int, 1, None],
+    successvalue2: app_commands.Range[int, 1, None],
+    ability1: str = None,
+    ability2: str = None
+):
+    log, number, colorset = d(successvalue1)
+    log2 = judge_log(number, successvalue2)
 
-async def cbrb_command(interaction: discord.Interaction,successvalue1:app_commands.Range[int, 1, None],successvalue2:app_commands.Range[int,1,None],ability1:str=None,ability2:str=None):
-    # ダイスの出目判定
-    log,number,colorset=d(successvalue1)
-    
-    # 出目と色判定はsuccessvalue1のまま、判定結果だけをsuccessvalue2で判定し、log2に保存する
-    if number<=successvalue2/5:
-        if number<=5:
-            log2="**成功/決定的成功/スペシャル**"
-        else:
-            log2="**成功/スペシャル**"
-    else:
-        if number<=successvalue2:
-            if number<=5:
-                log2="**成功/決定的成功**"
-            else:
-                log2="**成功**"
-        else:
-            if number>=96:
-                log2="**失敗/致命的失敗**"
-            else:
-                log2="**失敗**"
-    
-    # logがどの技能のものなのかを示す
-    ability_log1=f"{log}({ability1})" or log
-    ability_log2=f"{log2}({ability2})" or log2
-    
-    # successvalue1が成功か失敗かで埋め込みメッセージの色を変える
-    if colorset == 1:
-        # successvalue1が成功
-        embed = discord.Embed(
-            title=f"{ability_log1},{ability_log2}",
-            description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
-            color=0x3773FF
-        )
-    else:
-        # successvalue2が失敗
-        embed = discord.Embed(
-            title=f"{ability_log1},{ability_log2}",
-            description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
-            color=0xe60628
-        )
-    embed.set_author(
-        name=interaction.user.display_name,
-        icon_url=interaction.user.display_avatar.url
+    ability_log1 = f"{log}({ability1})" if ability1 else log
+    ability_log2 = f"{log2}({ability2})" if ability2 else log2
+    footer_text = ",".join(a for a in (ability1, ability2) if a)
+
+    embed = discord.Embed(
+        title=f"{ability_log1},{ability_log2}",
+        description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
+        color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
-    embed.set_footer(text=f"{ability1},{ability2}" or "")
+    set_author(embed, interaction, footer_text or None)
     await interaction.response.send_message(embed=embed)
 
-# /dice
-@tree.command(name="dice", description="ダイスを振ります")
 
-async def dice_command(interaction: discord.Interaction,amount:app_commands.Range[int, 1, None],sides:app_commands.Range[int,1,None]):
-    num_list=[]
-    for i in range(amount):
-        num_list.append(random.randint(1,sides))
-    
-    # 正誤がないので色は統一
-    number=sum(num_list)
-    
-    # 表示時複数の結果を表示するか単独の結果かの判定
-    if len(num_list)==1:
+@tree.command(name="dice", description="ダイスを振ります")
+async def dice_command(
+    interaction: discord.Interaction,
+    amount: app_commands.Range[int, 1, 1000],
+    sides: app_commands.Range[int, 1, 1000000]
+):
+    num_list = [random.randint(1, sides) for _ in range(amount)]
+    number = sum(num_list)
+
+    if len(num_list) == 1:
         embed = discord.Embed(
             description=f"**{amount}D{sides}**\n ->{number}",
-            color=0xbef604
+            color=NORMAL_COLOR
         )
     else:
+        details = ", ".join(str(n) for n in num_list)
+        if len(details) > 3500:
+            details = details[:3500] + " …"
         embed = discord.Embed(
-            description=f"**{amount}D{sides}**\n ->{num_list}\n ->{number}",
-            color=0xbef604
+            description=f"**{amount}D{sides}**\n ->{details}\n ->{number}",
+            color=NORMAL_COLOR
         )
-    embed.set_author(
-        name=interaction.user.display_name,
-        icon_url=interaction.user.display_avatar.url
-    )
+    set_author(embed, interaction)
     await interaction.response.send_message(embed=embed)
 
-# シークレットダイス
-# /s_ccb
+
+# ------------------------------
+# シークレットダイス（DM送信）
+# ------------------------------
 @tree.command(name="s_ccb", description="技能判定用シークレットクトゥルフダイスを振ります")
-
-async def sccb_command(interaction: discord.Interaction,successvalue:app_commands.Range[int, 1, None],ability:str=None):
-    
-    # ダイスの出目判定
-    log,number,colorset=d(successvalue)
-    
-    # 失敗か成功かで埋め込みメッセージの色を変える
-    if colorset == 1:
-        # 成功
-        embed = discord.Embed(
-            title=log,
-            description=f"**1D100<={successvalue}**\n ->{number}",
-            color=0x3773FF
-        )
-    else:
-        # 失敗
-        embed = discord.Embed(
-            title=log,
-            description=f"**1D100<={successvalue}**\n ->{number}",
-            color=0xe60628
-        )
-    embed.set_author(
-        name=interaction.user.display_name,
-        icon_url=interaction.user.display_avatar.url
+async def sccb_command(
+    interaction: discord.Interaction,
+    successvalue: app_commands.Range[int, 1, None],
+    ability: str = None
+):
+    log, number, colorset = d(successvalue)
+    embed = discord.Embed(
+        title=log,
+        description=f"**1D100<={successvalue}**\n ->{number}",
+        color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
-    embed.set_footer(text=ability or "")
-    await interaction.user.send(embed=embed)
-    await interaction.response.send_message("🎲シークレットダイス")
+    set_author(embed, interaction, ability or None)
+    await send_secret(interaction, embed)
 
-# /s_resb
+
 @tree.command(name="s_resb", description="対抗ロール用シークレットクトゥルフダイスを振ります")
+async def sresb_command(
+    interaction: discord.Interaction,
+    yourstatus: app_commands.Range[int, 1, None],
+    enemystatus: app_commands.Range[int, 1, None],
+    ability: str = None
+):
+    successvalue = 50 + (yourstatus - enemystatus) * 5
 
-async def sresb_command(interaction: discord.Interaction,yourstatus:app_commands.Range[int, 1, None],enemystatus:app_commands.Range[int,1,None],ability:str=None):
-    
-    # ダイスの出目判定
-    successvalue=50+(yourstatus-enemystatus)*5
-    
-    if successvalue>=100:
-        # 自動成功
+    if successvalue >= 100:
         embed = discord.Embed(
             title="自動成功",
             description=f"**resb({yourstatus}-{enemystatus})**\n ->自動成功",
-            color=0x3773FF
-            )
+            color=SUCCESS_COLOR
+        )
+    elif successvalue <= 0:
+        embed = discord.Embed(
+            title="自動失敗",
+            description=f"**resb({yourstatus}-{enemystatus})**\n ->自動失敗",
+            color=FAIL_COLOR
+        )
     else:
-            if successvalue<=0:
-                # 自動失敗
-                embed = discord.Embed(
-                title="自動失敗",
-                description=f"**resb({yourstatus}-{enemystatus})**\n ->自動失敗",
-                color=0xe60628
-                )
-            else:
-                log,number,colorset=d(successvalue)
-    
-                # 失敗か成功かで埋め込みメッセージの色を変える
-                if colorset == 1:
-                    # 成功
-                    embed = discord.Embed(
-                        title=log,
-                        description=f"**resb({yourstatus}-{enemystatus})**\n\n**1D100<={successvalue}**\n ->{number}",
-                        color=0x3773FF
-                    )
-                else:
-                    # 失敗
-                    embed = discord.Embed(
-                        title=log,
-                        description=f"**resb({yourstatus}-{enemystatus})**\n\n**1D100<={successvalue}**\n ->{number}",
-                        color=0xe60628
-                    )
-    embed.set_author(
-        name=interaction.user.display_name,
-        icon_url=interaction.user.display_avatar.url
-    )
-    embed.set_footer(text=ability or "")
-    await interaction.user.send(embed=embed)
-    await interaction.response.send_message("🎲シークレットダイス")
+        log, number, colorset = d(successvalue)
+        embed = discord.Embed(
+            title=log,
+            description=(
+                f"**resb({yourstatus}-{enemystatus})**\n\n"
+                f"**1D100<={successvalue}**\n ->{number}"
+            ),
+            color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
+        )
 
-# /s_cbrb
+    set_author(embed, interaction, ability or None)
+    await send_secret(interaction, embed)
+
+
 @tree.command(name="s_cbrb", description="組み合わせロール用シークレットクトゥルフダイスを振ります")
+async def scbrb_command(
+    interaction: discord.Interaction,
+    successvalue1: app_commands.Range[int, 1, None],
+    successvalue2: app_commands.Range[int, 1, None],
+    ability1: str = None,
+    ability2: str = None
+):
+    log, number, colorset = d(successvalue1)
+    log2 = judge_log(number, successvalue2)
 
-async def scbrb_command(interaction: discord.Interaction,successvalue1:app_commands.Range[int, 1, None],successvalue2:app_commands.Range[int,1,None],ability1:str=None,ability2:str=None):
-    
-    # ダイスの出目判定
-    log,number,colorset=d(successvalue1)
-    
-    # 出目と色判定はsuccessvalue1のまま、判定結果だけをsuccessvalue2で判定し、log2に保存する
-    if number<=successvalue2/5:
-        if number<=5:
-            log2="**成功/決定的成功/スペシャル**"
-        else:
-            log2="**成功/スペシャル**"
-    else:
-        if number<=successvalue2:
-            if number<=5:
-                log2="**成功/決定的成功**"
-            else:
-                log2="**成功**"
-        else:
-            if number>=96:
-                log2="**失敗/致命的失敗**"
-            else:
-                log2="**失敗**"
-    
-    # logがどの技能のものなのかを示す
-    ability_log1=f"{log}({ability1})" or log
-    ability_log2=f"{log2}({ability2})" or log2
-    
-    # successvalue1が成功か失敗かで埋め込みメッセージの色を変える
-    if colorset == 1:
-        # successvalue1が成功
-        embed = discord.Embed(
-            title=f"{ability_log1},{ability_log2}",
-            description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
-            color=0x3773FF
-        )
-    else:
-        # successvalue2が失敗
-        embed = discord.Embed(
-            title=f"{ability_log1},{ability_log2}",
-            description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
-            color=0xe60628
-        )
-    embed.set_author(
-        name=interaction.user.display_name,
-        icon_url=interaction.user.display_avatar.url
+    ability_log1 = f"{log}({ability1})" if ability1 else log
+    ability_log2 = f"{log2}({ability2})" if ability2 else log2
+    footer_text = ",".join(a for a in (ability1, ability2) if a)
+
+    embed = discord.Embed(
+        title=f"{ability_log1},{ability_log2}",
+        description=f"**1D100<={successvalue1},{successvalue2}**\n ->{number}",
+        color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
-    embed.set_footer(text=f"{ability1},{ability2}" or "")
-    await interaction.user.send(embed=embed)
-    await interaction.response.send_message("🎲シークレットダイス")
+    set_author(embed, interaction, footer_text or None)
+    await send_secret(interaction, embed)
 
-# /s_dice
+
 @tree.command(name="s_dice", description="シークレットダイスを振ります")
+async def sdice_command(
+    interaction: discord.Interaction,
+    amount: app_commands.Range[int, 1, 1000],
+    sides: app_commands.Range[int, 1, 1000000]
+):
+    num_list = [random.randint(1, sides) for _ in range(amount)]
+    number = sum(num_list)
 
-async def sdice_command(interaction: discord.Interaction,amount:app_commands.Range[int, 1, None],sides:app_commands.Range[int,1,None]):
-    
-    num_list=[]
-    for i in range(amount):
-        num_list.append(random.randint(1,sides))
-    
-    # 正誤がないので色は統一
-    number=sum(num_list)
-    
-    # 表示時複数の結果を表示するか単独の結果かの判定
-    if len(num_list)==1:
+    if len(num_list) == 1:
         embed = discord.Embed(
             description=f"**{amount}D{sides}**\n ->{number}",
-            color=0xbef604
+            color=NORMAL_COLOR
         )
     else:
+        details = ", ".join(str(n) for n in num_list)
+        if len(details) > 3500:
+            details = details[:3500] + " …"
         embed = discord.Embed(
-            description=f"**{amount}D{sides}**\n ->{num_list}\n ->{number}",
-            color=0xbef604
+            description=f"**{amount}D{sides}**\n ->{details}\n ->{number}",
+            color=NORMAL_COLOR
         )
-    embed.set_author(
-        name=interaction.user.display_name,
-        icon_url=interaction.user.display_avatar.url
-    )
-    await interaction.user.send(embed=embed)
-    await interaction.response.send_message("🎲シークレットダイス")
+    set_author(embed, interaction)
+    await send_secret(interaction, embed)
 
+
+# ------------------------------
+# ロールパネル
+# ------------------------------
 # /rolepannel
 @tree.command(name="rolepannel", description="PL等を管理するためのロールパネルを作成します(管理者専用)")
 @app_commands.default_permissions(administrator=True)
@@ -487,5 +496,19 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
             await member.remove_roles(role)
             await member.send(f"**{guild.name}**でロール:**{role.name}**を解除しました。")
 
+# ------------------------------
+# 起動
+# ------------------------------
+if __name__ == "__main__":
+    # PORT が設定されている環境でのみ Web サーバーを起動
+    if app is not None and os.environ.get("PORT"):
+        threading.Thread(target=run_web, daemon=True).start()
+        print("Web キープアライブを開始しました")
 
-client.run(TOKEN)
+    try:
+        client.run(TOKEN)
+    except discord.LoginFailure:
+        print("ログイン失敗: DISCORD_TOKEN が無効です。値を確認してください。")
+    except Exception:
+        print("起動時に致命的エラーが発生しました:")
+        traceback.print_exc()

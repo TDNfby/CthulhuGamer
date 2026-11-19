@@ -226,12 +226,12 @@ async def ccb_command(
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
     if cricount > 0:
-		uid = str(interaction.user.id)
-		cid = str(interaction.channel.id)
-		latest_data = load_data()
-		if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
-			latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
-			save_data(latest_data)
+      uid = str(interaction.user.id)
+      cid = str(interaction.channel.id)
+      latest_data = load_data()
+      if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
+        latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
+        save_data(latest_data)
     set_author(embed, interaction, ability or None)
     await interaction.response.send_message(embed=embed)
 
@@ -268,12 +268,12 @@ async def resb_command(
             color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
         )
     if cricount > 0:
-		uid = str(interaction.user.id)
-		cid = str(interaction.channel.id)
-		latest_data = load_data()
-		if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
-			latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
-			save_data(latest_data)
+      uid = str(interaction.user.id)
+      cid = str(interaction.channel.id)
+      latest_data = load_data()
+      if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
+        latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
+      save_data(latest_data)
     set_author(embed, interaction, ability or None)
     await interaction.response.send_message(embed=embed)
 
@@ -299,12 +299,12 @@ async def cbrb_command(
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
     if cricount > 0:
-		uid = str(interaction.user.id)
-		cid = str(interaction.channel.id)
-		latest_data = load_data()
-		if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
-			latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
-			save_data(latest_data)
+      uid = str(interaction.user.id)
+      cid = str(interaction.channel.id)
+      latest_data = load_data()
+      if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
+        latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
+        save_data(latest_data)
     set_author(embed, interaction, footer_text or None)
     await interaction.response.send_message(embed=embed)
 
@@ -351,12 +351,12 @@ async def sccb_command(
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
     if cricount > 0:
-		uid = str(interaction.user.id)
-		cid = str(interaction.channel.id)
-		latest_data = load_data()
-		if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
-			latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
-			save_data(latest_data)
+      uid = str(interaction.user.id)
+      cid = str(interaction.channel.id)
+      latest_data = load_data()
+      if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
+        latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
+        save_data(latest_data)
     set_author(embed, interaction, ability or None)
     await send_secret(interaction, embed)
 
@@ -393,12 +393,12 @@ async def sresb_command(
             color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
         )
     if cricount > 0:
-		uid = str(interaction.user.id)
-		cid = str(interaction.channel.id)
-		latest_data = load_data()
-		if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
-			latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
-			save_data(latest_data)
+      uid = str(interaction.user.id)
+      cid = str(interaction.channel.id)
+      latest_data = load_data()
+      if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
+        latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
+        save_data(latest_data)
     set_author(embed, interaction, ability or None)
     await send_secret(interaction, embed)
 
@@ -424,12 +424,12 @@ async def scbrb_command(
         color=SUCCESS_COLOR if colorset == 1 else FAIL_COLOR
     )
     if cricount > 0:
-		uid = str(interaction.user.id)
-		cid = str(interaction.channel.id)
-		latest_data = load_data()
-		if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
-			latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
-			save_data(latest_data)
+      uid = str(interaction.user.id)
+      cid = str(interaction.channel.id)
+      latest_data = load_data()
+      if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
+        latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
+        save_data(latest_data)
     set_author(embed, interaction, footer_text or None)
     await send_secret(interaction, embed)
 
@@ -734,7 +734,7 @@ async def status(interaction:discord.Interaction,target_status:Optional[Literal[
       return
         
   instantpcname= data[user_id]["pcname"]
-    embed=discord.Embed(
+  embed=discord.Embed(
     title=f"**{instantpcname}のステータス**",
     description=f"\n{result}",
     color=NORMAL_COLOR

@@ -82,20 +82,26 @@ def d(value):
     if number <= value / 5:
         if number <= 5:
             cricount=1
-            return "**成功/決定的成功/スペシャル**", number, 1 ,cricount
+            fancount=0
+            return "**成功/決定的成功/スペシャル**", number, 1 ,cricount,fancount
         cricount=0
-        return "**成功/スペシャル**", number, 1 ,cricount
+        fancount=0
+        return "**成功/スペシャル**", number, 1 ,cricount,fancount
     if number <= value:
         if number <= 5:
             cricount=1
-            return "**成功/決定的成功**", number, 1 ,cricount
+            fancount=0
+            return "**成功/決定的成功**", number, 1 ,cricount,fancount
         cricount=0
-        return "**成功**", number, 1 ,cricount
+        fancount=0
+        return "**成功**", number, 1 ,cricount,fancount
     if number >= 96:
         cricount=0
-        return "**失敗/致命的失敗**", number, 0 ,cricount
+        fancount=1
+        return "**失敗/致命的失敗**", number, 0 ,cricount,fancount
     cricount=0
-    return "**失敗**", number, 0 ,cricount
+    fancount=0
+    return "**失敗**", number, 0 ,cricount,fancount
 
 
 def judge_log(number, value):
@@ -219,7 +225,7 @@ async def ccb_command(
     successvalue: app_commands.Range[int, 1, None],
     ability: str = None
    ):
-    log, number, colorset ,cricount= d(successvalue)
+    log, number, colorset ,cricount,fancount= d(successvalue)
     embed = discord.Embed(
         title=log,
         description=f"**1D100<={successvalue}**\n ->{number}",
@@ -231,6 +237,13 @@ async def ccb_command(
       latest_data = load_data()
       if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
         latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
+        save_data(latest_data)
+    if fancount > 0:
+      uid = str(interaction.user.id)
+      cid = str(interaction.channel.id)
+      latest_data = load_data()
+      if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
+        latest_data[uid]["fancount"] = latest_data[uid].get("fancount", 0) + fancount
         save_data(latest_data)
     set_author(embed, interaction, ability or None)
     await interaction.response.send_message(embed=embed)
@@ -258,7 +271,7 @@ async def resb_command(
             color=FAIL_COLOR
         )
     else:
-        log, number, colorset ,cricount= d(successvalue)
+        log, number, colorset ,cricount,fancount= d(successvalue)
         embed = discord.Embed(
             title=log,
             description=(
@@ -274,6 +287,13 @@ async def resb_command(
       if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
         latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
       save_data(latest_data)
+    if fancount > 0:
+      uid = str(interaction.user.id)
+      cid = str(interaction.channel.id)
+      latest_data = load_data()
+      if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
+        latest_data[uid]["fancount"] = latest_data[uid].get("fancount", 0) + fancount
+        save_data(latest_data)
     set_author(embed, interaction, ability or None)
     await interaction.response.send_message(embed=embed)
 
@@ -286,7 +306,7 @@ async def cbrb_command(
     ability1: str = None,
     ability2: str = None
 ):
-    log, number, colorset ,cricount= d(successvalue1)
+    log, number, colorset ,cricount,fancount= d(successvalue1)
     log2 = judge_log(number, successvalue2)
 
     ability_log1 = f"{log}({ability1})" if ability1 else log
@@ -304,6 +324,13 @@ async def cbrb_command(
       latest_data = load_data()
       if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
         latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
+        save_data(latest_data)
+    if fancount > 0:
+      uid = str(interaction.user.id)
+      cid = str(interaction.channel.id)
+      latest_data = load_data()
+      if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
+        latest_data[uid]["fancount"] = latest_data[uid].get("fancount", 0) + fancount
         save_data(latest_data)
     set_author(embed, interaction, footer_text or None)
     await interaction.response.send_message(embed=embed)
@@ -344,7 +371,7 @@ async def sccb_command(
     successvalue: app_commands.Range[int, 1, None],
     ability: str = None
 ):
-    log, number, colorset,cricount= d(successvalue)
+    log, number, colorset,cricount,fancount= d(successvalue)
     embed = discord.Embed(
         title=log,
         description=f"**1D100<={successvalue}**\n ->{number}",
@@ -356,6 +383,13 @@ async def sccb_command(
       latest_data = load_data()
       if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
         latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
+        save_data(latest_data)
+    if fancount > 0:
+      uid = str(interaction.user.id)
+      cid = str(interaction.channel.id)
+      latest_data = load_data()
+      if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
+        latest_data[uid]["fancount"] = latest_data[uid].get("fancount", 0) + fancount
         save_data(latest_data)
     set_author(embed, interaction, ability or None)
     await send_secret(interaction, embed)
@@ -383,7 +417,7 @@ async def sresb_command(
             color=FAIL_COLOR
         )
     else:
-        log, number, colorset,cricount = d(successvalue)
+        log, number, colorset,cricount,fancount = d(successvalue)
         embed = discord.Embed(
             title=log,
             description=(
@@ -399,6 +433,13 @@ async def sresb_command(
       if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
         latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
         save_data(latest_data)
+    if fancount > 0:
+      uid = str(interaction.user.id)
+      cid = str(interaction.channel.id)
+      latest_data = load_data()
+      if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
+        latest_data[uid]["fancount"] = latest_data[uid].get("fancount", 0) + fancount
+        save_data(latest_data)
     set_author(embed, interaction, ability or None)
     await send_secret(interaction, embed)
 
@@ -411,7 +452,7 @@ async def scbrb_command(
     ability1: str = None,
     ability2: str = None
 ):
-    log, number, colorset ,cricount= d(successvalue1)
+    log, number, colorset ,cricount,fancount= d(successvalue1)
     log2 = judge_log(number, successvalue2)
 
     ability_log1 = f"{log}({ability1})" if ability1 else log
@@ -429,6 +470,13 @@ async def scbrb_command(
       latest_data = load_data()
       if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
         latest_data[uid]["cricount"] = latest_data[uid].get("cricount", 0) + cricount
+        save_data(latest_data)
+    if fancount > 0:
+      uid = str(interaction.user.id)
+      cid = str(interaction.channel.id)
+      latest_data = load_data()
+      if uid in latest_data and check.get(cid, {}).get("sessioncheck", 0) == 1:
+        latest_data[uid]["fancount"] = latest_data[uid].get("fancount", 0) + fancount
         save_data(latest_data)
     set_author(embed, interaction, footer_text or None)
     await send_secret(interaction, embed)
@@ -627,7 +675,8 @@ async def out_session(interaction:discord.Interaction):
       mp=status.get("mp",0)
       san=status.get("san",0)
       cricount=status.get("cricount",0)
-      lines.append(f"<@{user_id}>:**{pcname}**  \nHP:{hp}\nMP:{mp}\nSAN:{san}\nクリティカル:{cricount}")
+      fancount=status.get("fancount",0)
+      lines.append(f"<@{user_id}>:**{pcname}**  \nHP:{hp}\nMP:{mp}\nSAN:{san}\nクリティカル:{cricount}\nファンブル:{fancount}")
 		# 全部つなげて1つの文章にする  
     result_text = "\n".join(lines) 
     embed=discord.Embed(
@@ -657,6 +706,7 @@ async def set_status(interaction:discord.Interaction,pcname:str,hp:int,mp:int,sa
   data[user_id]["mp"]=mp
   data[user_id]["san"]=san
   data[user_id]["cricount"]=0
+  data[user_id]["fancount"]=0
   save_data(data)
   embed=discord.Embed(
     title=f"**{pcname}**",
@@ -721,7 +771,8 @@ async def status(interaction:discord.Interaction,target_status:Optional[Literal[
     mp= data[user_id]["mp"]
     san= data[user_id]["san"]
     cricount= data[user_id]["cricount"]
-    result=(f"HP:{hp}\nMP:{mp}\nSAN:{san}\nクリティカル数:{cricount}")
+    fancount= data[user_id]["fancount"]
+    result=(f"HP:{hp}\nMP:{mp}\nSAN:{san}\nクリティカル数:{cricount}\nファンブル数:{fancount}")
   else:
     if public or None:
       instantpcname= data[user_id]["pcname"]

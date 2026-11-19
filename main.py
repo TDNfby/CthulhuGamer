@@ -692,8 +692,8 @@ async def out_session(interaction:discord.Interaction):
 
 # /set_status
 @tree.command(name="set_status",description="PCの名前,HP,MP,SANの初期値を設定します")
-@app_commands.describe(pcname="PCの名前",hp="初期HP",mp="初期MP",san="初期SAN")
-async def set_status(interaction:discord.Interaction,pcname:str,hp:int,mp:int,san:int):
+@app_commands.describe(pcname="PCの名前(後から変更不可)",hp="初期HP",mp="初期MP",san="初期SAN",public="ステータスを公開するか(未入力で非公開)")
+async def set_status(interaction:discord.Interaction,pcname:str,hp:int,mp:int,san:int,public:bool):
   channel_id=str(interaction.channel.id)
   if channel_id not in check or check[channel_id].get("sessioncheck",0)!=1:
     await interaction.response.send_message("先に`/session`を使用してセッションを開始してください",ephemeral=True)
@@ -713,7 +713,10 @@ async def set_status(interaction:discord.Interaction,pcname:str,hp:int,mp:int,sa
     description=f"HP:{hp}\nMP:{mp} \nSAN:{san}",
     color=NORMAL_COLOR
   )
-  await interaction.response.send_message(embed=embed)
+  if public or None:
+    await interaction.response.send_message(embed=embed)
+  else:
+    await interaction.response.send_message(embed=embed,ephemeral=True)
   
 # /set
 @tree.command(name="set",description="PCのHP,MP,SANの値を変更します")
@@ -766,7 +769,6 @@ async def status(interaction:discord.Interaction,target_status:Optional[Literal[
     await interaction.response.send_message("まだデータがありません。") 
     return
   if target_status==None:
-    pcname=data[user_id]["pcname"]
     hp= data[user_id]["hp"]
     mp= data[user_id]["mp"]
     san= data[user_id]["san"]
@@ -795,7 +797,58 @@ async def status(interaction:discord.Interaction,target_status:Optional[Literal[
   else:
     await interaction.response.send_message(embed=embed,ephemeral=True)
 		  
-      
+# /pc_status
+@tree.command(name="pc_status",description="指定したユーザーのPCのステータスを閲覧します(KP専用)")
+async def look_pc_status(interaction:discord.Interaction,target_pl:discord.Member):
+  guild_id = str(interaction.guild.id)
+  kp_role_id = check.get(guild_id, {}).get("kp_role_id")
+  if not kp_role_id or not any(role.id == kp_role_id for role in interaction.user.roles):
+    await interaction.response.send_message("このコマンドを実行する権限がありません（または`/set_kp`でKPロールが未設定です）", ephemeral=True)
+    return
+  channel_id=str(interaction.channel.id)
+  if channel_id not in check or check[channel_id].get("sessioncheck", 0) ==0:
+    await interaction.response.send_message("このチャンネルで`/session`は実行されていません")
+    return
+  user_id=str(target_pl.id)
+  if user_id not in data:
+    await interaction.response.send_message("指定したユーザーは`/set_status`を使用していません", ephemeral=True)
+    return
+  hp= data[user_id]["hp"]
+  mp= data[user_id]["mp"]
+  san= data[user_id]["san"]
+  cricount= data[user_id]["cricount"]
+  fancount= data[user_id]["fancount"]
+  result=(f"HP:{hp}\nMP:{mp}\nSAN:{san}\nクリティカル数:{cricount}\nファンブル数:{fancount}")
+  instantpcname= data[user_id]["pcname"]
+  embed=discord.Embed(
+    title=f"**{instantpcname}のステータス**",
+    description=f"\n{result}",
+    color=NORMAL_COLOR
+  )
+  await interaction.response.send_message(embed=embed,ephemeral=True)
+  
+
+# /set_pc_status
+@tree.command(name="set_pc_status",description="指定したユーザーのPCのHP,MP,SANの値を変更します(KP専用)")
+@app_commands.describe(target_status= "変更したいステータス")
+async def set_pc_status(interaction:discord.Interaction,target_pl:discord.Member,target_status:Literal["hp","mp","san","cricount","fancount"],amount:int):
+  guild_id = str(interaction.guild.id)
+  kp_role_id = check.get(guild_id, {}).get("kp_role_id")
+  if not kp_role_id or not any(role.id == kp_role_id for role in interaction.user.roles):
+    await interaction.response.send_message("このコマンドを実行する権限がありません（または`/set_kp`でKPロールが未設定です）", ephemeral=True)
+    return
+  channel_id=str(interaction.channel.id)
+  if channel_id not in check or check[channel_id].get("sessioncheck", 0) ==0:
+    await interaction.response.send_message("このチャンネルで`/session`は実行されていません")
+    return
+  user_id=str(target_pl.id)
+  if user_id not in data:
+    await interaction.response.send_message("指定したユーザーは`/set_status`を使用していません", ephemeral=True)
+    return
+  data[user_id][target_status]=amount
+  save_data(data)
+  pcname=data[user_id]["pcname"]
+  await interaction.response.send_message(f"{pcname}の{target_status}を{amount}に設定しました！",ephemeral=True)
 
 # ------------------------------
 # 起動
